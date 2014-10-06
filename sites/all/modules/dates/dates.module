@@ -1,0 +1,155 @@
+<?php
+/**
+ * @file
+ * Module code that provides a bunch of date formats presets.
+ */
+
+/**
+ * Implements hook_help().
+ */
+function dates_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#dates':
+      return t("Choose any provided date formats through the standard date settings page. Interested in reading about @standards?",
+        array("@standards" => l("standard date & time formats", "http://www.w3.org/TR/NOTE-datetime")));
+  }
+}
+
+/**
+ * Implements hook_date_format_types().
+ */
+function dates_date_format_types() {
+  return array(
+    'year' => t('Year'),
+    'month' => t('Month'),
+    'day' => t('Day'),
+    'time' => t('Time'),
+  );
+}
+
+/**
+ * Implements hook_date_formats().
+ */
+function dates_date_formats() {
+  // Can't have duplicate date formats (yet) due to Database case-insentivity & UNIQUE key usage: https://drupal.org/node/1012620
+  //   Require that minimum Drupal version via .info file.
+
+  return array(
+    // Long
+    array(
+      'type' => 'long',
+      'format' => 'l jS F Y H:i:s e',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'long',
+      'format' => 'l jS F Y h:i:sa',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'long',
+      'format' => 'r',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'long',
+      'format' => 'c',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'long',
+      'format' => 'D, d M Y H:i:s',
+      'locales' => array(),
+    ),
+
+    // Short
+    array(
+      'type' => 'short',
+      'format' => 'F Y',
+      'locales' => array(),
+    ),
+
+    // Year
+    array(
+      'type' => 'year',
+      'format' => '\'y',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'year',
+      'format' => 'Y',
+      'locales' => array(),
+    ),
+
+    // Month
+    array(
+      'type' => 'month',
+      'format' => 'M',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'month',
+      'format' => 'M.',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'month',
+      'format' => 'F',
+      'locales' => array(),
+    ),
+
+    // Day
+    array(
+      'type' => 'day',
+      'format' => 'j',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'day',
+      'format' => 'jS',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'day',
+      'format' => 'D',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'day',
+      'format' => 'l',
+      'locales' => array(),
+    ),
+
+    // Time
+//     array(
+//       'type' => 'time',
+//       'format' => 'h:i',
+//       'locales' => array(),
+//     ),
+    array(
+      'type' => 'time',
+      'format' => 'H:i',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'time',
+      'format' => 'g:i',
+      'locales' => array(),
+    ),
+//     array(
+//       'type' => 'time',
+//       'format' => 'g:ia',
+//       'locales' => array(),
+//     ),
+    array(
+      'type' => 'time',
+      'format' => 'g:iA ',
+      'locales' => array(),
+    ),
+    array(
+      'type' => 'time',
+      'format' => 'H:i:s',
+      'locales' => array(),
+    ),
+  );
+}

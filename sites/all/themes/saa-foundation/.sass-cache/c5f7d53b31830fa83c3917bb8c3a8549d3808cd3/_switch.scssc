@@ -1,0 +1,1176 @@
+3.3.0.alpha.134 (Bleeding Edge)
+f2dacbc1477ad63277304adaed1300e865c09165
+o:Sass::Tree::RootNode:@has_childrenT:@template"^"//
+// Switch Variables
+//
+$include-html-form-classes: $include-html-classes !default;
+
+// Controlling border styles and background colors for the switch container
+$switch-border-color: darken(#fff, 20%) !default;
+$switch-border-style: solid !default;
+$switch-border-width: 1px !default;
+$switch-bg: #fff !default;
+
+// We use these to control the switch heights for our default classes
+$switch-height-tny: 22px !default;
+$switch-height-sml: 28px !default;
+$switch-height-med: 36px !default;
+$switch-height-lrg: 44px !default;
+$switch-bottom-margin: emCalc(20) !default;
+
+// We use these to control default font sizes for our classes.
+$switch-font-size-tny: 11px !default;
+$switch-font-size-sml: 12px !default;
+$switch-font-size-med: 14px !default;
+$switch-font-size-lrg: 17px !default;
+$switch-label-side-padding: 6px !default;
+
+// We use these to style the switch-paddle
+$switch-paddle-bg: #fff !default;
+$switch-paddle-fade-to-color: darken($switch-paddle-bg, 10%) !default;
+$switch-paddle-border-color: darken($switch-paddle-bg, 35%) !default;
+$switch-paddle-border-width: 1px !default;
+$switch-paddle-border-style: solid !default;
+$switch-paddle-transition-speed: .1s !default;
+$switch-paddle-transition-ease: ease-out !default;
+$switch-positive-color: lighten($success-color, 50%) !default;
+$switch-negative-color: #f5f5f5 !default;
+
+// Outline Style for tabbing through switches
+$switch-label-outline: 1px dotted #888 !default;
+
+
+//
+// Switch Mixins
+//
+
+// We use this mixin to create the base styles for our switch element.
+@mixin switch-base($transition-speed:$switch-paddle-transition-speed, $transition-ease:$switch-paddle-transition-ease) {
+
+  // Default position and structure for switch container.
+  position: relative;
+  width: 100%;
+  padding: 0;
+  display: block;
+  overflow: hidden;
+  border-style: $switch-border-style;
+  border-width: $switch-border-width;
+  margin-bottom: $switch-bottom-margin;
+
+  // Default label styles for type and transition
+  label {
+    position: relative;
+    #{$default-float}: 0;
+    z-index: 2;
+    float: $default-float;
+    width: 50%;
+    height: 100%;
+    margin: 0;
+    font-weight: bold;
+    text-align: $default-float;
+
+    // Transition for the switch label to follow paddle
+    @include single-transition(all, $transition-speed, $transition-ease);
+  }
+
+  // So that we don't need to recreate the form with any JS, we use the
+  // existing radio button, but we cleverly position and hide it.
+  input {
+    position: absolute;
+    z-index: 3;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    -moz-appearance: none;
+
+    // Hover and focus styles for the paddle
+    &:hover,
+    &:focus {
+      cursor: $cursor-pointer-value;
+    }
+  }
+
+  // The toggle area for radio switches. We call is a paddle.
+  span:last-child {
+    position: absolute;
+    top: -1px;
+    #{$default-float}: -1px;
+    z-index: 1;
+    display: block;
+    padding: 0;
+    border-width: $switch-paddle-border-width;
+    border-style: $switch-paddle-border-style;
+
+    // Transition for the switch paddle
+    @include single-transition(all, $transition-speed, $transition-ease);
+  }
+
+  // When a label isn't :checked, we hide it as it slides away.
+  input:not(:checked) + label { opacity: 0; }
+
+  // Controlling the position of the labels as they are toggled.
+  input:checked { display: none !important; }
+  input { #{$default-float}: 0; display: block !important; }
+
+  // Left Label alignment and position changes, including fixes for while inside a custom form
+  input:first-of-type + label,
+  input:first-of-type + span + label { #{$default-float}: -50%; }
+  input:first-of-type:checked + label,
+  input:first-of-type:checked + span + label { #{$default-float}: 0%; }
+
+  // Right Label alignment and position changes, including fixes for while inside a custom form
+  input:last-of-type + label,
+  input:last-of-type + span + label {#{$opposite-direction}: -50%; #{$default-float}: auto; text-align: $opposite-direction; }
+  input:last-of-type:checked + label,
+  input:last-of-type:checked + span + label { #{$opposite-direction}: 0%; #{$default-float}: auto; }
+
+  // Hiding custom form spans since we auto-create them
+  span.custom { display: none !important; }
+
+  // Bugfix for older Webkit, including mobile Webkit. Adapted from:
+  // http://css-tricks.com/webkit-sibling-bug/
+  @if $experimental { -webkit-animation: webkitSiblingBugfix infinite 1s; }
+
+  form.custom & .hidden-field {
+    margin-left: auto;
+    position: absolute;
+    visibility: visible;
+  }
+}
+
+// We use this mixin to create the size styles for switches.
+@mixin switch-size($height:$switch-height-med, $font-size:$switch-font-size-med, $line-height:2.3em) {
+
+  height: $height;
+
+  label {
+    padding: emCalc(0, $switch-label-side-padding);
+    line-height: $line-height;
+    font-size: emCalc($font-size);
+  }
+
+  input {
+    // Move the paddle to the right position
+    &:first-of-type:checked ~ span:last-child {
+      #{$default-float}: 100%;
+      margin-#{$default-float}: emCalc(-$height + 1px);
+    }
+  }
+
+  span:last-child {
+    width: emCalc($height);
+    height: emCalc($height);
+  }
+
+}
+
+// We use this mixin to add color and other fanciness to the switches.
+@mixin switch-style($paddle-bg:$switch-paddle-bg, $positive-color:$switch-positive-color, $negative-color:$switch-negative-color, $radius:false, $base-style:true) {
+
+  @if $base-style {
+    background: $switch-bg;
+    border-color: $switch-border-color;
+
+    span:last-child {
+      border-color: darken($paddle-bg, 30%);
+      background: $paddle-bg;
+      @if $experimental {
+        background: -moz-linear-gradient(top, $paddle-bg 0%, darken($paddle-bg, 5%) 100%);
+        background: -webkit-linear-gradient(top, $paddle-bg 0%, darken($paddle-bg, 5%) 100%);
+      }
+      background: linear-gradient(to bottom, $paddle-bg 0%, darken($paddle-bg, 5%) 100%);
+
+      // Building the alternating colored sides of the switch
+      @if $experimental {
+        -webkit-box-shadow: 2px 0 10px 0 rgba(0,0,0,0.07),
+                            1000px 0 0 1000px $positive-color,
+                            -2px 0 10px 0 rgba(0,0,0,0.07),
+                            -1000px 0 0 1000px $negative-color;
+      }
+      box-shadow:         2px 0 10px 0 rgba(0,0,0,0.07),
+                          1000px 0 0 980px $positive-color,
+                          -2px 0 10px 0 rgba(0,0,0,0.07),
+                          -1000px 0 0 1000px $negative-color;
+    }
+
+    &:hover,
+    &:focus {
+      span:last-child {
+        background: $paddle-bg;
+        @if $experimental {
+          background: -moz-linear-gradient(top, $paddle-bg 0%, darken($paddle-bg, 10%) 100%);
+          background: -webkit-linear-gradient(top, $paddle-bg 0%, darken($paddle-bg, 10%) 100%);
+        }
+        background: linear-gradient(to bottom, $paddle-bg 0%, darken($paddle-bg, 10%) 100%);
+      }
+    }
+
+    &:active { background: transparent; }
+  }
+
+  // Setting up the radius for switches
+  @if $radius == true {
+    @include radius(4px);
+    span:last-child { @include radius(3px); }
+  }
+  @else if $radius {
+    @include radius($radius);
+    span:last-child { @include radius($radius - 1px); }
+  }
+
+}
+
+// We use this to quickly create switches with a single mixin
+@mixin switch($transition-speed:$switch-paddle-transition-speed, $transition-ease:$switch-paddle-transition-ease, $height:$switch-height-med, $font-size:$switch-font-size-med, $line-height:2.3em, $paddle-bg:$switch-paddle-bg, $positive-color:$switch-positive-color, $negative-color:$switch-negative-color, $radius:false, $base-style:true) {
+  @include switch-base($transition-speed, $transition-ease);
+  @include switch-size($height, $font-size, $line-height);
+  @include switch-style($paddle-bg, $positive-color, $negative-color, $radius, $base-style);
+}
+
+@if $include-html-form-classes != false {
+
+  /* Foundation Switches */
+  @media only screen {
+
+    // Containing element for the radio switch
+    div.switch {
+      @include switch;
+
+      // Large radio switches
+      &.large { @include switch-size($switch-height-lrg, $switch-font-size-lrg); }
+
+      // Small radio switches
+      &.small { @include switch-size($switch-height-sml, $switch-font-size-sml, 2.1em); }
+
+      // Tiny radio switches
+      &.tiny { @include switch-size($switch-height-tny, $switch-font-size-tny, 1.9em); }
+
+      // Add a radius to the switch
+      &.radius { @include radius(4px);
+        span:last-child{ @include radius(3px); }
+      }
+
+      // Make the switch completely round, like a pill
+      &.round { @include radius(1000px);
+        span:last-child { @include radius(999px); }
+        label { padding: emCalc(0, $switch-label-side-padding + 3); }
+      }
+
+    }
+
+    @if $experimental { @-webkit-keyframes webkitSiblingBugfix { from { position: relative; } to { position: relative; } } }
+
+  }
+}
+:@children[.o:Sass::Tree::CommentNode
+:@value["!/*
+ * Switch Variables
+ * */:
+@type:silent;[ :
+@linei:@options{ o:Sass::Tree::VariableNode:
+@expro:Sass::Script::Variable:@underscored_name"include_html_classes:
+@name"include-html-classes:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_switch.scss;i	;@:@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti8;i	:@start_poso;;i";i	:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@;"include-html-form-classes;[ ;i	:@guarded"!default;@;o;	;o;;i@;i	;o;;i;i	;@;!@o;	
+;
+["S/* Controlling border styles and background colors for the switch container */;;;[ ;i;@o;;o:Sass::Script::Funcall:@keywords{ :
+@args[o:Sass::Script::Color
+;
+0:@attrs{	:rediˇ:
+greeniˇ:
+alphai:	blueiˇ;i;@;o;	;o;;i';i;o;;i#;i;@;!@o:Sass::Script::Number;
+i:@numerator_units["%:@original"20%;i;@;o;	;o;;i,;i;o;;i);i;@;!@:@denominator_units[ ;"darken;@:@splat0;i;@;o;	;o;;i.;i;o;;i;i;@;!@;"switch-border-color;[ ;i;""!default;@;o;	;o;;i6;i;o;;i;i;@;!@o;;o:Sass::Script::String;
+"
+solid;:identifier;@;i;@;o;	;o;;i";i;o;;i;i;@;!@;"switch-border-style;[ ;i;""!default;@;o;	;o;;i*;i;o;;i;i;@;!@o;;o;,;
+i;-["px;."1px;i;@;o;	;o;;i ;i;o;;i;i;@;!@;/[ ;"switch-border-width;[ ;i;""!default;@;o;	;o;;i(;i;o;;i;i;@;!@o;;o;&
+;
+0;'{	;(iˇ;)iˇ;*i;+iˇ;i;@;o;	;o;;i;i;o;;i;i;@;!@;"switch-bg;[ ;i;""!default;@;o;	;o;;i;i;o;;i;i;@;!@o;	
+;
+["M/* We use these to control the switch heights for our default classes */;;;[ ;i;@o;;o;,;
+i;-["px;."	22px;i;@;o;	;o;;i;i;o;;i;i;@;!@;/[ ;"switch-height-tny;[ ;i;""!default;@;o;	;o;;i';i;o;;i;i;@;!@o;;o;,;
+i!;-["px;."	28px;i;@;o;	;o;;i;i;o;;i;i;@;!@;/[ ;"switch-height-sml;[ ;i;""!default;@;o;	;o;;i';i;o;;i;i;@;!@o;;o;,;
+i);-["px;."	36px;i;@;o;	;o;;i;i;o;;i;i;@;!@;/[ ;"switch-height-med;[ ;i;""!default;@;o;	;o;;i';i;o;;i;i;@;!@o;;o;,;
+i1;-["px;."	44px;i;@;o;	;o;;i;i;o;;i;i;@;!@;/[ ;"switch-height-lrg;[ ;i;""!default;@;o;	;o;;i';i;o;;i;i;@;!@o;;o;#;${ ;%[o;,;
+i;-[ ;."20;i;@;o;	;o;;i&;i;o;;i$;i;@;!@;/[ ;"emCalc;@;00;i;@;o;	;o;;i(;i;o;;i;i;@;!@;"switch-bottom-margin;[ ;i;""!default;@;o;	;o;;i0;i;o;;i;i;@;!@o;	
+;
+["F/* We use these to control default font sizes for our classes. */;;;[ ;i;@o;;o;,;
+i;-["px;."	11px;i;@;o;	;o;;i";i;o;;i;i;@;!@;/[ ;"switch-font-size-tny;[ ;i;""!default;@;o;	;o;;i*;i;o;;i;i;@;!@o;;o;,;
+i;-["px;."	12px;i;@;o;	;o;;i";i;o;;i;i;@;!@;/[ ;"switch-font-size-sml;[ ;i;""!default;@;o;	;o;;i*;i;o;;i;i;@;!@o;;o;,;
+i;-["px;."	14px;i;@;o;	;o;;i";i;o;;i;i;@;!@;/[ ;"switch-font-size-med;[ ;i;""!default;@;o;	;o;;i*;i;o;;i;i;@;!@o;;o;,;
+i;-["px;."	17px;i;@;o;	;o;;i";i;o;;i;i;@;!@;/[ ;"switch-font-size-lrg;[ ;i;""!default;@;o;	;o;;i*;i;o;;i;i;@;!@o;;o;,;
+i;-["px;."6px;i;@;o;	;o;;i&;i;o;;i";i;@;!@;/[ ;"switch-label-side-padding;[ ;i;""!default;@;o;	;o;;i.;i;o;;i;i;@;!@o;	
+;
+["2/* We use these to style the switch-paddle */;;;[ ;i;@o;;o;&
+;
+0;'{	;(iˇ;)iˇ;*i;+iˇ;i ;@;o;	;o;;i;i ;o;;i;i ;@;!@;"switch-paddle-bg;[ ;i ;""!default;@;o;	;o;;i&;i ;o;;i;i ;@;!@o;;o;#;${ ;%[o;;"switch_paddle_bg;"switch-paddle-bg;@;i!;@;o;	;o;;i<;i!;o;;i<;i!;@;!@o;,;
+i;-["%;."10%;i!;@;o;	;o;;iA;i!;o;;i>;i!;@;!@;/[ ;"darken;@;00;i!;@;o;	;o;;iC;i!;o;;i$;i!;@;!@;" switch-paddle-fade-to-color;[ ;i!;""!default;@;o;	;o;;iK;i!;o;;i;i!;@;!@o;;o;#;${ ;%[o;;"switch_paddle_bg;"switch-paddle-bg;@;i";@;o;	;o;;i;;i";o;;i;;i";@;!@o;,;
+i(;-["%;."35%;i";@;o;	;o;;i@;i";o;;i=;i";@;!@;/[ ;"darken;@;00;i";@;o;	;o;;iB;i";o;;i#;i";@;!@;"switch-paddle-border-color;[ ;i";""!default;@;o;	;o;;iJ;i";o;;i;i";@;!@o;;o;,;
+i;-["px;."1px;i#;@;o;	;o;;i';i#;o;;i#;i#;@;!@;/[ ;"switch-paddle-border-width;[ ;i#;""!default;@;o;	;o;;i/;i#;o;;i;i#;@;!@o;;o;1;
+"
+solid;;2;@;i$;@;o;	;o;;i);i$;o;;i#;i$;@;!@;"switch-paddle-border-style;[ ;i$;""!default;@;o;	;o;;i1;i$;o;;i;i$;@;!@o;;o;,;
+f0.10000000000000001 ôö;-["s;."	0.1s;i%;@;o;	;o;;i+;i%;o;;i';i%;@;!@;/[ ;"#switch-paddle-transition-speed;[ ;i%;""!default;@;o;	;o;;i3;i%;o;;i;i%;@;!@o;;o;1;
+"ease-out;;2;@;i&;@;o;	;o;;i/;i&;o;;i&;i&;@;!@;""switch-paddle-transition-ease;[ ;i&;""!default;@;o;	;o;;i7;i&;o;;i;i&;@;!@o;;o;#;${ ;%[o;;"success_color;"success-color;@;i';@;o;	;o;;i4;i';o;;i4;i';@;!@o;,;
+i7;-["%;."50%;i';@;o;	;o;;i9;i';o;;i6;i';@;!@;/[ ;"lighten;@;00;i';@;o;	;o;;i;;i';o;;i;i';@;!@;"switch-positive-color;[ ;i';""!default;@;o;	;o;;iC;i';o;;i;i';@;!@o;;o;&
+;
+0;'{	;(iı;)iı;*i;+iı;i(;@;o;	;o;;i&;i(;o;;i;i(;@;!@;"switch-negative-color;[ ;i(;""!default;@;o;	;o;;i.;i(;o;;i;i(;@;!@o;	
+;
+["5/* Outline Style for tabbing through switches */;;;[ ;i*;@o;;o:Sass::Script::List;
+[o;,;
+i;-["px;."1px;i+;@;o;	;o;;i ;i+;o;;i;i+;@;!@;/[ o;1;
+"dotted;;2;@;i+;@;o;	;o;;i';i+;o;;i!;i+;@;!@o;&
+;
+0;'{	;(ià;)ià;*i;+ià;i+;@;o;	;o;;i,;i+;o;;i(;i+;@;!@;@:@separator:
+space;i+;o;	;o;;i-;i+;o;;i;i+;@;!@;@;"switch-label-outline;[ ;i+;""!default;@;o;	;o;;i5;i+;o;;i;i+;@;!@o;	
+;
+["/*
+ * Switch Mixins
+ * */;;;[ ;i.;@o;	
+;
+["N/* We use this mixin to create the base styles for our switch element. */;;;[ ;i2;@o:Sass::Tree::MixinDefNode;T;%[[o;	;"transition_speed;"transition-speed;@;o;	;o;;i*;i3;i;@;!@o;;"#switch_paddle_transition_speed;"#switch-paddle-transition-speed;@;i3;@;o;	;o;;iJ;i3;o;;iJ;i3;@;!@[o;	;"transition_ease;"transition-ease;@;o;	;o;;i\;i3;iL;@;!@o;;""switch_paddle_transition_ease;""switch-paddle-transition-ease;@;i3;@;o;	;o;;i{;i3;o;;i{;i3;@;!@;"switch-base;[$o;	
+;
+["?/* Default position and structure for switch container. */;;;[ ;i5;@o:Sass::Tree::PropNode;
+o;1;
+"relative;;2;@:
+@tabsi ;["position:@value_source_rangeo;	;o;;i;i6;o;;i;i6;@;!@;[ ;i6:@name_source_rangeo;	;o;;i;i6;o;;i;i6;@;!@;@;o;	;@˚;@ ;@;!@:@prop_syntax:newo;7;
+o;1;
+"	100%;;2;@;8i ;["
+width;9o;	;o;;i;i7;o;;i;i7;@;!@;[ ;i7;:o;	;o;;i;i7;o;;i;i7;@;!@;@;o;	;@;@;@;!@;;;<o;7;
+o;1;
+"0;;2;@;8i ;["padding;9o;	;o;;i;i8;o;;i;i8;@;!@;[ ;i8;:o;	;o;;i;i8;o;;i;i8;@;!@;@;o;	;@;@;@;!@;;;<o;7;
+o;1;
+"
+block;;2;@;8i ;["display;9o;	;o;;i;i9;o;;i;i9;@;!@;[ ;i9;:o;	;o;;i;i9;o;;i;i9;@;!@;@;o;	;@";@';@;!@;;;<o;7;
+o;1;
+"hidden;;2;@;8i ;["overflow;9o;	;o;;i;i:;o;;i;i:;@;!@;[ ;i:;:o;	;o;;i;i:;o;;i;i:;@;!@;@;o;	;@/;@4;@;!@;;;<o;7;
+o;;"switch_border_style;"switch-border-style;@;i;;@;o;	;o;;i*;i;;o;;i;i;;@;!@;8i ;["border-style;9o;	;o;;i*;i;;o;;i;i;;@;!@;[ ;i;;:o;	;o;;i;i;;o;;i;i;;@;!@;@;o;	;@@;@E;@;!@;;;<o;7;
+o;;"switch_border_width;"switch-border-width;@;i<;@;o;	;o;;i*;i<;o;;i;i<;@;!@;8i ;["border-width;9o;	;o;;i*;i<;o;;i;i<;@;!@;[ ;i<;:o;	;o;;i;i<;o;;i;i<;@;!@;@;o;	;@Q;@V;@;!@;;;<o;7;
+o;;"switch_bottom_margin;"switch-bottom-margin;@;i=;@;o;	;o;;i,;i=;o;;i;i=;@;!@;8i ;["margin-bottom;9o;	;o;;i,;i=;o;;i;i=;@;!@;[ ;i=;:o;	;o;;i;i=;o;;i;i=;@;!@;@;o;	;@b;@g;@;!@;;;<o;	
+;
+["7/* Default label styles for type and transition */;;;[ ;i?;@o:Sass::Tree::RuleNode;T;8i ;[o;7;
+o;1;
+"relative;;2;@;8i ;["position;9o;	;o;;i;iA;o;;i;iA;@;!@;[ ;iA;:o;	;o;;i;iA;o;;i
+;iA;@;!@;@;o;	;@u;@z;@;!@;;;<o;7;
+o;1;
+"0;;2;@;8i ;[o;;"default_float;"default-float;@;iB;@;o;	;o;;i;iB;o;;i;iB;@;!@;9o;	;o;;i;iB;o;;i;iB;@;!@;[ ;iB;:o;	;o;;i;iB;o;;i
+;iB;@;!@;@;o;	;@á;@å;@;!@;;;<o;7;
+o;1;
+"2;;2;@;8i ;["z-index;9o;	;o;;i;iC;o;;i;iC;@;!@;[ ;iC;:o;	;o;;i;iC;o;;i
+;iC;@;!@;@;o;	;@î;@ô;@;!@;;;<o;7;
+o;;"default_float;"default-float;@;iD;@;o;	;o;;i;iD;o;;i;iD;@;!@;8i ;["
+float;9o;	;o;;i;iD;o;;i;iD;@;!@;[ ;iD;:o;	;o;;i;iD;o;;i
+;iD;@;!@;@;o;	;@•;@™;@;!@;;;<o;7;
+o;1;
+"50%;;2;@;8i ;["
+width;9o;	;o;;i;iE;o;;i;iE;@;!@;[ ;iE;:o;	;o;;i;iE;o;;i
+;iE;@;!@;@;o;	;@≤;@∑;@;!@;;;<o;7;
+o;1;
+"	100%;;2;@;8i ;["height;9o;	;o;;i;iF;o;;i;iF;@;!@;[ ;iF;:o;	;o;;i;iF;o;;i
+;iF;@;!@;@;o;	;@ø;@ƒ;@;!@;;;<o;7;
+o;1;
+"0;;2;@;8i ;["margin;9o;	;o;;i;iG;o;;i;iG;@;!@;[ ;iG;:o;	;o;;i;iG;o;;i
+;iG;@;!@;@;o;	;@Ã;@—;@;!@;;;<o;7;
+o;1;
+"	bold;;2;@;8i ;["font-weight;9o;	;o;;i;iH;o;;i;iH;@;!@;[ ;iH;:o;	;o;;i;iH;o;;i
+;iH;@;!@;@;o;	;@Ÿ;@ﬁ;@;!@;;;<o;7;
+o;;"default_float;"default-float;@;iI;@;o;	;o;;i$;iI;o;;i;iI;@;!@;8i ;["text-align;9o;	;o;;i$;iI;o;;i;iI;@;!@;[ ;iI;:o;	;o;;i;iI;o;;i
+;iI;@;!@;@;o;	;@Í;@Ô;@;!@;;;<o;	
+;
+[";/* Transition for the switch label to follow paddle */;;;[ ;iK;@o:Sass::Tree::MixinNode;${ ;%[o;1;
+"all;;2;@;iL;@;o;	;o;;i(;iL;o;;i%;iL;@;!@o;;"transition_speed;"transition-speed;@;iL;@;o;	;o;;i;;iL;o;;i;;iL;@;!@o;;"transition_ease;"transition-ease;@;iL;@;o;	;o;;iM;iL;o;;iM;iL;@;!@;"single-transition;[ ;00;iL;@;o;	;o;;iN;iL;o;;i
+;iL;@;!@:@selector_source_rangeo;	;o;;i;i@;o;;i;i@;@;!@;i@:@parsed_ruleso:"Sass::Selector::CommaSequence:@members[o:Sass::Selector::Sequence;B[o:#Sass::Selector::SimpleSequence;B[o:Sass::Selector::Element	;["
+label;" ;i@:@namespace0;@;i@:@sourceso;;{ :@subject0;o;	;o;;i;i;o;;i;i;0;!@;@;i@:
+@rule["
+label;@;o;	;o;;i	;iM;o;;i;i@;@;!@o;	
+;
+["à/* So that we don't need to recreate the form with any JS, we use the
+ * existing radio button, but we cleverly position and hide it. */;;;[ ;iO;@o;=;T;8i ;[o;7;
+o;1;
+"absolute;;2;@;8i ;["position;9o;	;o;;i;iR;o;;i;iR;@;!@;[ ;iR;:o;	;o;;i;iR;o;;i
+;iR;@;!@;@;o;	;@1;@6;@;!@;;;<o;7;
+o;1;
+"3;;2;@;8i ;["z-index;9o;	;o;;i;iS;o;;i;iS;@;!@;[ ;iS;:o;	;o;;i;iS;o;;i
+;iS;@;!@;@;o;	;@>;@C;@;!@;;;<o;7;
+o;1;
+"0;;2;@;8i ;["opacity;9o;	;o;;i;iT;o;;i;iT;@;!@;[ ;iT;:o;	;o;;i;iT;o;;i
+;iT;@;!@;@;o;	;@K;@P;@;!@;;;<o;7;
+o;1;
+"	100%;;2;@;8i ;["
+width;9o;	;o;;i;iU;o;;i;iU;@;!@;[ ;iU;:o;	;o;;i;iU;o;;i
+;iU;@;!@;@;o;	;@X;@];@;!@;;;<o;7;
+o;1;
+"	100%;;2;@;8i ;["height;9o;	;o;;i;iV;o;;i;iV;@;!@;[ ;iV;:o;	;o;;i;iV;o;;i
+;iV;@;!@;@;o;	;@e;@j;@;!@;;;<o;7;
+o;1;
+"	none;;2;@;8i ;["-moz-appearance;9o;	;o;;i;iW;o;;i;iW;@;!@;[ ;iW;:o;	;o;;i;iW;o;;i
+;iW;@;!@;@;o;	;@r;@w;@;!@;;;<o;	
+;
+["0/* Hover and focus styles for the paddle */;;;[ ;iY;@o;=;T;8i ;[o;7;
+o;;"cursor_pointer_value;"cursor-pointer-value;@;i\;@;o;	;o;;i);i\;o;;i;i\;@;!@;8i ;["cursor;9o;	;o;;i);i\;o;;i;i\;@;!@;[ ;i\;:o;	;o;;i;i\;o;;i;i\;@;!@;@;o;	;@â;@é;@;!@;;;<;?o;	;o;;i;i[;o;;i
+;iZ;@;!@;iZ;@o;A;B[o;C;B[o;D;B[o:Sass::Selector::Parent;" ;iZo:Sass::Selector::Pseudo
+;:
+class:	@arg0;["
+hover;@ö;iZ;@ö;iZ;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@öo;C;B["
+o;D;B[o;J;@ö;iZo;K
+;;L;M0;["
+focus;@ö;iZ;@ö;iZ;Go;;{ ;H0;o;	;o;;i;i;o;;i
+;i;0;!@ö;@ö;iZ;I["&:hover,
+    &:focus;@;o;	;o;;i;i];o;;i
+;iZ;@;!@;?o;	;o;;i;iQ;o;;i;iQ;@;!@;iQ;@o;A;B[o;C;B[o;D;B[o;E	;["
+input;" ;iQ;F0;@¬;iQ;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@¬;@¬;iQ;I["
+input;@;o;	;o;;i	;i^;o;;i;iQ;@;!@o;	
+;
+["C/* The toggle area for radio switches. We call is a paddle. */;;;[ ;i`;@o;=;T;8i ;[o;7;
+o;1;
+"absolute;;2;@;8i ;["position;9o;	;o;;i;ib;o;;i;ib;@;!@;[ ;ib;:o;	;o;;i;ib;o;;i
+;ib;@;!@;@;o;	;@Ÿ;@ﬁ;@;!@;;;<o;7;
+o;1;
+"	-1px;;2;@;8i ;["top;9o;	;o;;i;ic;o;;i;ic;@;!@;[ ;ic;:o;	;o;;i;ic;o;;i
+;ic;@;!@;@;o;	;@Ê;@Î;@;!@;;;<o;7;
+o;1;
+"	-1px;;2;@;8i ;[o;;"default_float;"default-float;@;id;@;o;	;o;;i;id;o;;i;id;@;!@;9o;	;o;;i!;id;o;;i;id;@;!@;[ ;id;:o;	;o;;i;id;o;;i
+;id;@;!@;@;o;	;@¯;@˝;@;!@;;;<o;7;
+o;1;
+"1;;2;@;8i ;["z-index;9o;	;o;;i;ie;o;;i;ie;@;!@;[ ;ie;:o;	;o;;i;ie;o;;i
+;ie;@;!@;@;o;	;@;@
+;@;!@;;;<o;7;
+o;1;
+"
+block;;2;@;8i ;["display;9o;	;o;;i;if;o;;i;if;@;!@;[ ;if;:o;	;o;;i;if;o;;i
+;if;@;!@;@;o;	;@;@;@;!@;;;<o;7;
+o;1;
+"0;;2;@;8i ;["padding;9o;	;o;;i;ig;o;;i;ig;@;!@;[ ;ig;:o;	;o;;i;ig;o;;i
+;ig;@;!@;@;o;	;@;@$;@;!@;;;<o;7;
+o;;"switch_paddle_border_width;"switch-paddle-border-width;@;ih;@;o;	;o;;i3;ih;o;;i;ih;@;!@;8i ;["border-width;9o;	;o;;i3;ih;o;;i;ih;@;!@;[ ;ih;:o;	;o;;i;ih;o;;i
+;ih;@;!@;@;o;	;@0;@5;@;!@;;;<o;7;
+o;;"switch_paddle_border_style;"switch-paddle-border-style;@;ii;@;o;	;o;;i3;ii;o;;i;ii;@;!@;8i ;["border-style;9o;	;o;;i3;ii;o;;i;ii;@;!@;[ ;ii;:o;	;o;;i;ii;o;;i
+;ii;@;!@;@;o;	;@A;@F;@;!@;;;<o;	
+;
+["+/* Transition for the switch paddle */;;;[ ;ik;@o;>;${ ;%[o;1;
+"all;;2;@;il;@;o;	;o;;i(;il;o;;i%;il;@;!@o;;"transition_speed;"transition-speed;@;il;@;o;	;o;;i;;il;o;;i;;il;@;!@o;;"transition_ease;"transition-ease;@;il;@;o;	;o;;iM;il;o;;iM;il;@;!@;"single-transition;[ ;00;il;@;o;	;o;;iN;il;o;;i
+;il;@;!@;?o;	;o;;i;ia;o;;i;ia;@;!@;ia;@o;A;B[o;C;B[o;D;B[o;E	;["	span;" ;ia;F0o;K
+;;L;M0;["last-child;@q;ia;@q;ia;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@q;@q;ia;I["span:last-child;@;o;	;o;;i	;im;o;;i;ia;@;!@o;	
+;
+["E/* When a label isn't :checked, we hide it as it slides away. */;;;[ ;io;@o;=;T;8i ;[o;7;
+o;1;
+"0;;2;@;8i ;["opacity;9o;	;o;;i0;ip;o;;i/;ip;@;!@;[ ;ip;:o;	;o;;i-;ip;o;;i&;ip;@;!@;@;o;	;@ã;@ê;@;!@;;;<;?o;	;o;;i$;ip;o;;i;ip;@;!@;ip;@o;A;B[o;C;B[o;D;B[o;E	;["
+input;" ;ip;F0o;K
+;;L;M[":checked;["not;@û;ip;@û;ip;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@û"+o;D;B[o;E	;["
+label;@û;ip;F0;@û;ip;Go;;{ ;H0;o;	;o;;i!;i;o;;i;i;0;!@û;@û;ip;I[" input:not(:checked) + label;@;o;	;o;;i3;ip;o;;i;ip;@;!@o;	
+;
+["F/* Controlling the position of the labels as they are toggled. */;;;[ ;ir;@o;=;T;8i ;[o;7;
+o;1;
+"none !important;;2;@;8i ;["display;9o;	;o;;i0;is;o;;i!;is;@;!@;[ ;is;:o;	;o;;i;is;o;;i;is;@;!@;@;o;	;@≈;@ ;@;!@;;;<;?o;	;o;;i;is;o;;i;is;@;!@;is;@o;A;B[o;C;B[o;D;B[o;E	;["
+input;" ;is;F0o;K
+;;L;M0;["checked;@ÿ;is;@ÿ;is;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@ÿ;@ÿ;is;I["input:checked;@;o;	;o;;i3;is;o;;i;is;@;!@o;=;T;8i ;[o;7;
+o;1;
+"0;;2;@;8i ;[o;;"default_float;"default-float;@;it;@;o;	;o;;i!;it;o;;i;it;@;!@;9o;	;o;;i$;it;o;;i#;it;@;!@;[ ;it;:o;	;o;;i!;it;o;;i;it;@;!@;@;o;	;@Û;@¯;@;!@;;;<o;7;
+o;1;
+"block !important;;2;@;8i ;["display;9o;	;o;;i?;it;o;;i/;it;@;!@;[ ;it;:o;	;o;;i-;it;o;;i&;it;@;!@;@;o;	;@ ;@;@;!@;;;<;?o;	;o;;i;it;o;;i;it;@;!@;it;@o;A;B[o;C;B[o;D;B[o;E	;["
+input;" ;it;F0;@;it;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@;@;it;I["
+input;@;o;	;o;;iB;it;o;;i;it;@;!@o;	
+;
+["d/* Left Label alignment and position changes, including fixes for while inside a custom form */;;;[ ;iv;@o;=;T;8i ;[o;7;
+o;1;
+"	-50%;;2;@;8i ;[o;;"default_float;"default-float;@;ix;@;o;	;o;;i>;ix;o;;i/;ix;@;!@;9o;	;o;;iD;ix;o;;i@;ix;@;!@;[ ;ix;:o;	;o;;i>;ix;o;;i-;ix;@;!@;@;o;	;@/;@4;@;!@;;;<;?o;	;o;;i+;ix;o;;i;iw;@;!@;iw;@o;A;B[o;C;B[o;D;B[o;E	;["
+input;" ;iw;F0o;K
+;;L;M0;["first-of-type;@B;iw;@B;iw;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@B"+o;D;B[o;E	;["
+label;@B;iw;F0;@B;iw;Go;;{ ;H0;o;	;o;;i!;i;o;;i;i;0;!@Bo;C;B["
+o;D;B[o;E	;["
+input;@B;iw;F0o;K
+;;L;M0;["first-of-type;@B;iw;@B;iw;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@B"+o;D;B[o;E	;["	span;@B;iw;F0;@B;iw;Go;;{ ;H0;o;	;o;;i";i;o;;i;i;0;!@B"+o;D;B[o;E	;["
+label;@B;iw;F0;@B;iw;Go;;{ ;H0;o;	;o;;i*;i;o;;i%;i;0;!@B;@B;iw;I["Finput:first-of-type + label,
+  input:first-of-type + span + label;@;o;	;o;;iG;ix;o;;i;iw;@;!@o;=;T;8i ;[o;7;
+o;1;
+"0%;;2;@;8i ;[o;;"default_float;"default-float;@;iz;@;o;	;o;;iF;iz;o;;i7;iz;@;!@;9o;	;o;;iJ;iz;o;;iH;iz;@;!@;[ ;iz;:o;	;o;;iF;iz;o;;i5;iz;@;!@;@;o;	;@é;@ì;@;!@;;;<;?o;	;o;;i3;iz;o;;i;iy;@;!@;iy;@o;A;B[o;C;B[o;D;B[o;E	;["
+input;" ;iy;F0o;K
+;;L;M0;["first-of-type;@°;iyo;K
+;;L;M0;["checked;@°;iy;@°;iy;Go;;{ ;H0;o;	;o;;i!;i;o;;i;i;0;!@°"+o;D;B[o;E	;["
+label;@°;iy;F0;@°;iy;Go;;{ ;H0;o;	;o;;i);i;o;;i$;i;0;!@°o;C;B["
+o;D;B[o;E	;["
+input;@°;iy;F0o;K
+;;L;M0;["first-of-type;@°;iyo;K
+;;L;M0;["checked;@°;iy;@°;iy;Go;;{ ;H0;o;	;o;;i#;i;o;;i;i;0;!@°"+o;D;B[o;E	;["	span;@°;iy;F0;@°;iy;Go;;{ ;H0;o;	;o;;i*;i;o;;i&;i;0;!@°"+o;D;B[o;E	;["
+label;@°;iy;F0;@°;iy;Go;;{ ;H0;o;	;o;;i2;i;o;;i-;i;0;!@°;@°;iy;I["Vinput:first-of-type:checked + label,
+  input:first-of-type:checked + span + label;@;o;	;o;;iM;iz;o;;i;iy;@;!@o;	
+;
+["e/* Right Label alignment and position changes, including fixes for while inside a custom form */;;;[ ;i|;@o;=;T;8i ;[o;7;
+o;1;
+"	-50%;;2;@;8i ;[o;;"opposite_direction;"opposite-direction;@;i~;@;o;	;o;;iA;i~;o;;i-;i~;@;!@;9o;	;o;;iG;i~;o;;iC;i~;@;!@;[ ;i~;:o;	;o;;iA;i~;o;;i+;i~;@;!@;@;o;	;@˜;@¸;@;!@;;;<o;7;
+o;1;
+"	auto;;2;@;8i ;[o;;"default_float;"default-float;@;i~;@;o;	;o;;iZ;i~;o;;iK;i~;@;!@;9o;	;o;;i`;i~;o;;i\;i~;@;!@;[ ;i~;:o;	;o;;iZ;i~;o;;iI;i~;@;!@;@;o;	;@	;@;@;!@;;;<o;7;
+o;;"opposite_direction;"opposite-direction;@;i~;@;o;	;o;;i|;i~;o;;in;i~;@;!@;8i ;["text-align;9o;	;o;;i|;i~;o;;in;i~;@;!@;[ ;i~;:o;	;o;;il;i~;o;;ib;i~;@;!@;@;o;	;@;@;@;!@;;;<;?o;	;o;;i*;i~;o;;i;i};@;!@;i};@o;A;B[o;C;B[o;D;B[o;E	;["
+input;" ;i};F0o;K
+;;L;M0;["last-of-type;@-;i};@-;i};Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@-"+o;D;B[o;E	;["
+label;@-;i};F0;@-;i};Go;;{ ;H0;o;	;o;;i ;i;o;;i;i;0;!@-o;C;B["
+o;D;B[o;E	;["
+input;@-;i};F0o;K
+;;L;M0;["last-of-type;@-;i};@-;i};Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@-"+o;D;B[o;E	;["	span;@-;i};F0;@-;i};Go;;{ ;H0;o;	;o;;i!;i;o;;i;i;0;!@-"+o;D;B[o;E	;["
+label;@-;i};F0;@-;i};Go;;{ ;H0;o;	;o;;i);i;o;;i$;i;0;!@-;@-;i};I["Dinput:last-of-type + label,
+  input:last-of-type + span + label;@;o;	;o;;i;i~;o;;i;i};@;!@o;=;T;8i ;[o;7;
+o;1;
+"0%;;2;@;8i ;[o;;"opposite_direction;"opposite-direction;@;i{;@;o;	;o;;iJ;i{;o;;i6;i{;@;!@;9o;	;o;;iN;i{;o;;iL;i{;@;!@;[ ;i{;:o;	;o;;iJ;i{;o;;i4;i{;@;!@;@;o;	;@y;@~;@;!@;;;<o;7;
+o;1;
+"	auto;;2;@;8i ;[o;;"default_float;"default-float;@;i{;@;o;	;o;;ia;i{;o;;iR;i{;@;!@;9o;	;o;;ig;i{;o;;ic;i{;@;!@;[ ;i{;:o;	;o;;ia;i{;o;;iP;i{;@;!@;@;o;	;@ã;@ê;@;!@;;;<;?o;	;o;;i2;i{;o;;i;i;@;!@;i;@o;A;B[o;C;B[o;D;B[o;E	;["
+input;" ;i;F0o;K
+;;L;M0;["last-of-type;@û;io;K
+;;L;M0;["checked;@û;i;@û;i;Go;;{ ;H0;o;	;o;;i ;i;o;;i;i;0;!@û"+o;D;B[o;E	;["
+label;@û;i;F0;@û;i;Go;;{ ;H0;o;	;o;;i(;i;o;;i#;i;0;!@ûo;C;B["
+o;D;B[o;E	;["
+input;@û;i;F0o;K
+;;L;M0;["last-of-type;@û;io;K
+;;L;M0;["checked;@û;i;@û;i;Go;;{ ;H0;o;	;o;;i";i;o;;i;i;0;!@û"+o;D;B[o;E	;["	span;@û;i;F0;@û;i;Go;;{ ;H0;o;	;o;;i);i;o;;i%;i;0;!@û"+o;D;B[o;E	;["
+label;@û;i;F0;@û;i;Go;;{ ;H0;o;	;o;;i1;i;o;;i,;i;0;!@û;@û;i;I["Tinput:last-of-type:checked + label,
+  input:last-of-type:checked + span + label;@;o;	;o;;ij;i{;o;;i;i;@;!@o;	
+;
+["=/* Hiding custom form spans since we auto-create them */;;;[ ;i};@o;=;T;8i ;[o;7;
+o;1;
+"none !important;;2;@;8i ;["display;9o;	;o;;i.;i~;o;;i;i~;@;!@;[ ;i~;:o;	;o;;i;i~;o;;i;i~;@;!@;@;o;	;@Ô;@Ù;@;!@;;;<;?o;	;o;;i;i~;o;;i;i~;@;!@;i~;@o;A;B[o;C;B[o;D;B[o;E	;["	span;" ;i~;F0o:Sass::Selector::Class;["custom;@;i~;@;i~;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@;@;i~;I["span.custom;@;o;	;o;;i1;i~;o;;i;i~;@;!@o;	
+;
+["w/* Bugfix for older Webkit, including mobile Webkit. Adapted from:
+ * http://css-tricks.com/webkit-sibling-bug/ */;;;[ ;iÄ;@u:Sass::Tree::IfNode#[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_switch.scss:
+@lineiÇ:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	iÇ:@start_poso;;i;	iÇ:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::PropNode:@valueo:Sass::Script::String;"$webkitSiblingBugfix infinite 1s:
+@type:identifier;
+@
+:
+@tabsi ;["-webkit-animation:@value_source_rangeo;	;o;;iN;	iÇ;o;;i/;	iÇ;@;@	:@children[ ;	iÇ:@name_source_rangeo;	;o;;i-;	iÇ;o;;i;	iÇ;@;@	;
+@
+;o;	;@;@;@;@	:@prop_syntax:newo;=;T;8i ;[o;7;
+o;1;
+"	auto;;2;@;8i ;["margin-left;9o;	;o;;i;iÖ;o;;i;iÖ;@;!@;[ ;iÖ;:o;	;o;;i;iÖ;o;;i
+;iÖ;@;!@;@;o;	;@;@";@;!@;;;<o;7;
+o;1;
+"absolute;;2;@;8i ;["position;9o;	;o;;i;iÜ;o;;i;iÜ;@;!@;[ ;iÜ;:o;	;o;;i;iÜ;o;;i
+;iÜ;@;!@;@;o;	;@*;@/;@;!@;;;<o;7;
+o;1;
+"visible;;2;@;8i ;["visibility;9o;	;o;;i;iá;o;;i;iá;@;!@;[ ;iá;:o;	;o;;i;iá;o;;i
+;iá;@;!@;@;o;	;@7;@<;@;!@;;;<;?o;	;o;;i$;iÑ;o;;i;iÑ;@;!@;iÑ;@o;A;B[o;C;B[o;D;B[o;E	;["	form;" ;iÑ;F0o;N;["custom;@J;iÑ;@J;iÑ;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@Jo;D;B[o;J;@J;iÑ;@J;iÑ;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@Jo;D;B[o;N;["hidden-field;@J;iÑ;@J;iÑ;Go;;{ ;H0;o;	;o;;i!;i;o;;i;i;0;!@J;@J;iÑ;I[" form.custom & .hidden-field;@;o;	;o;;i	;ià;o;;i;iÑ;@;!@;00;i3;@;o;	;o;;i;iâ;o;;i;i3;@;!@o;	
+;
+["D/* We use this mixin to create the size styles for switches. */;;;[ ;iã;@o;6;T;%[[o;	;"height;"height;@;o;	;o;;i ;iå;i;@;!@o;;"switch_height_med;"switch-height-med;@;iå;@;o;	;o;;i3;iå;o;;i3;iå;@;!@[o;	;"font_size;"font-size;@;o;	;o;;i?;iå;i5;@;!@o;;"switch_font_size_med;"switch-font-size-med;@;iå;@;o;	;o;;iU;iå;o;;iU;iå;@;!@[o;	;"line_height;"line-height;@;o;	;o;;ic;iå;iW;@;!@o;,;
+f2.2999999999999998 ff;-["em;."
+2.3em;iå;@;o;	;o;;ii;iå;o;;id;iå;@;!@;/[ ;"switch-size;[	o;7;
+o;;"height;"height;@;ié;@;o;	;o;;i;ié;o;;i;ié;@;!@;8i ;["height;9o;	;o;;i;ié;o;;i;ié;@;!@;[ ;ié;:o;	;o;;i;ié;o;;i;ié;@;!@;@;o;	;@¶;@´;@;!@;;;<o;=;T;8i ;[o;7;
+o;#;${ ;%[o;,;
+i ;-[ ;."0;ië;@;o;	;o;;i;ië;o;;i;ië;@;!@;/@™o;;"switch_label_side_padding;"switch-label-side-padding;@;ië;@;o;	;o;;i7;ië;o;;i7;ië;@;!@;"emCalc;@;00;ië;@;o;	;o;;i8;ië;o;;i;ië;@;!@;8i ;["padding;9o;	;o;;i8;ië;o;;i;ië;@;!@;[ ;ië;:o;	;o;;i;ië;o;;i
+;ië;@;!@;@;o;	;@∆;@À;@;!@;;;<o;7;
+o;;"line_height;"line-height;@;ií;@;o;	;o;;i#;ií;o;;i;ií;@;!@;8i ;["line-height;9o;	;o;;i#;ií;o;;i;ií;@;!@;[ ;ií;:o;	;o;;i;ií;o;;i
+;ií;@;!@;@;o;	;@◊;@‹;@;!@;;;<o;7;
+o;#;${ ;%[o;;"font_size;"font-size;@;iì;@;o;	;o;;i&;iì;o;;i&;iì;@;!@;"emCalc;@;00;iì;@;o;	;o;;i';iì;o;;i;iì;@;!@;8i ;["font-size;9o;	;o;;i';iì;o;;i;iì;@;!@;[ ;iì;:o;	;o;;i;iì;o;;i
+;iì;@;!@;@;o;	;@Ô;@Ù;@;!@;;;<;?o;	;o;;i;iê;o;;i;iê;@;!@;iê;@o;A;B[o;C;B[o;D;B[o;E	;["
+label;" ;iê;F0;@;iê;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@;@;iê;I["
+label;@;o;	;o;;i	;iî;o;;i;iê;@;!@o;=;T;8i ;[o;	
+;
+["0/* Move the paddle to the right position */;;;[ ;ió;@o;=;T;8i ;[o;7;
+o;1;
+"	100%;;2;@;8i ;[o;;"default_float;"default-float;@;iô;@;o;	;o;;i;iô;o;;i;iô;@;!@;9o;	;o;;i#;iô;o;;i;iô;@;!@;[ ;iô;:o;	;o;;i;iô;o;;i;iô;@;!@;@;o;	;@ ;@%;@;!@;;;<o;7;
+o;#;${ ;%[o:Sass::Script::Operation:@operator:	plus:@operand1o:!Sass::Script::UnaryOperation	;Q:
+minus;iö;@:@operando;;"height;"height;@;iö;@;o;	;o;;i5;iö;o;;i5;iö;@;!@;iö;@;o;	;o;;i<;iö;o;;i;;iö;@;!@:@operand2o;,;
+i;-["px;."1px;iö;@;o;	;o;;i;;iö;o;;i8;iö;@;!@;/[ ;"emCalc;@;00;iö;@;o;	;o;;i<;iö;o;;i&;iö;@;!@;8i ;["margin-o;;"default_float;"default-float;@;iö;@;o;	;o;;i$;iö;o;;i;iö;@;!@;9o;	;o;;i<;iö;o;;i&;iö;@;!@;[ ;iö;:o;	;o;;i$;iö;o;;i;iö;@;!@;@;o;	;@K;@P;@;!@;;;<;?o;	;o;;i4;iò;o;;i
+;iò;@;!@;iò;@o;A;B[o;C;B[o;D;B[o;J;" ;iòo;K
+;;L;M0;["first-of-type;@\;iòo;K
+;;L;M0;["checked;@\;iò;@\;iò;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@\"~o;D;B[o;E	;["	span;@\;iò;F0o;K
+;;L;M0;["last-child;@\;iò;@\;iò;Go;;{ ;H0;o;	;o;;i/;i;o;;i ;i;0;!@\;@\;iò;I[".&:first-of-type:checked ~ span:last-child;@;o;	;o;;i;iõ;o;;i
+;iò;@;!@;?o;	;o;;i;iñ;o;;i;iñ;@;!@;iñ;@o;A;B[o;C;B[o;D;B[o;E	;["
+input;" ;iñ;F0;@á;iñ;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@á;@á;iñ;I["
+input;@;o;	;o;;i	;iú;o;;i;iñ;@;!@o;=;T;8i ;[o;7;
+o;#;${ ;%[o;;"height;"height;@;iü;@;o;	;o;;i;iü;o;;i;iü;@;!@;"emCalc;@;00;iü;@;o;	;o;;i ;iü;o;;i;iü;@;!@;8i ;["
+width;9o;	;o;;i ;iü;o;;i;iü;@;!@;[ ;iü;:o;	;o;;i;iü;o;;i
+;iü;@;!@;@;o;	;@•;@™;@;!@;;;<o;7;
+o;#;${ ;%[o;;"height;"height;@;i†;@;o;	;o;;i ;i†;o;;i ;i†;@;!@;"emCalc;@;00;i†;@;o;	;o;;i!;i†;o;;i;i†;@;!@;8i ;["height;9o;	;o;;i!;i†;o;;i;i†;@;!@;[ ;i†;:o;	;o;;i;i†;o;;i
+;i†;@;!@;@;o;	;@Ω;@¬;@;!@;;;<;?o;	;o;;i;iû;o;;i;iû;@;!@;iû;@o;A;B[o;C;B[o;D;B[o;E	;["	span;" ;iû;F0o;K
+;;L;M0;["last-child;@–;iû;@–;iû;Go;;{ ;H0;o;	;o;;i;i;o;;i;i;0;!@–;@–;iû;I["span:last-child;@;o;	;o;;i	;i°;o;;i;iû;@;!@;00;iå;@;o;	;o;;i;i£;o;;i;iå;@;!@o;	
+;
+["N/* We use this mixin to add color and other fanciness to the switches. */;;;[ ;i•;@o;6;T;%[
+[o;	;"paddle_bg;"paddle-bg;@;o;	;o;;i$;i¶;i;@;!@o;;"switch_paddle_bg;"switch-paddle-bg;@;i¶;@;o;	;o;;i6;i¶;o;;i6;i¶;@;!@[o;	;"positive_color;"positive-color;@;o;	;o;;iG;i¶;i8;@;!@o;;"switch_positive_color;"switch-positive-color;@;i¶;@;o;	;o;;i^;i¶;o;;i^;i¶;@;!@[o;	;"negative_color;"negative-color;@;o;	;o;;io;i¶;i`;@;!@o;;"switch_negative_color;"switch-negative-color;@;i¶;@;o;	;o;;iÅ;i¶;o;;iÅ;i¶;@;!@[o;	;"radius;"radius;@;o;	;o;;iä;i¶;iÉ;@;!@o:Sass::Script::Bool	;
+F;i¶;@;o;	;o;;iê;i¶;o;;iã;i¶;@;!@[o;	;"base_style;"base-style;@;o;	;o;;iù;i¶;ií;@;!@o;X	;
+T;i¶;@;o;	;o;;i¢;i¶;o;;iû;i¶;@;!@;"switch-style;[u;OvA[o:Sass::Script::Variable:@underscored_name"base_style:
+@name"base-style:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_switch.scss:
+@linei®:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	i®:@start_poso;;i;	i®:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[
+o:Sass::Tree::PropNode:@valueo; ;"switch_bg;"switch-bg;@	;	i©;
+@
+;o;	;o;;i ;	i©;o;;i;	i©;@;@	:
+@tabsi ;["background:@value_source_rangeo;	;o;;i ;	i©;o;;i;	i©;@;@	:@children[ ;	i©:@name_source_rangeo;	;o;;i;	i©;o;;i
+;	i©;@;@	;
+@
+;o;	;@;@";@;@	:@prop_syntax:newo;;o; ;"switch_border_color;"switch-border-color;@	;	i™;
+@
+;o;	;o;;i,;	i™;o;;i;	i™;@;@	;i ;["border-color;o;	;o;;i,;	i™;o;;i;	i™;@;@	;[ ;	i™;o;	;o;;i;	i™;o;;i
+;	i™;@;@	;
+@
+;o;	;@.;@3;@;@	;;o:Sass::Tree::RuleNode:@has_childrenT;i ;[o;;o:Sass::Script::Funcall:@keywords{ :
+@args[o; ;"paddle_bg;"paddle-bg;@	;	i≠;
+@
+;o;	;o;;i+;	i≠;o;;i+;	i≠;@;@	o:Sass::Script::Number;i#:@numerator_units["%:@original"30%;	i≠;
+@
+;o;	;o;;i0;	i≠;o;;i-;	i≠;@;@	:@denominator_units[ ;"darken;@	:@splat0;	i≠;
+@
+;o;	;o;;i1;	i≠;o;;i;	i≠;@;@	;i ;["border-color;o;	;o;;i1;	i≠;o;;i;	i≠;@;@	;[ ;	i≠;o;	;o;;i;	i≠;o;;i;	i≠;@;@	;
+@
+;o;	;@P;@U;@;@	;;o;;o; ;"paddle_bg;"paddle-bg;@	;	iÆ;
+@
+;o;	;o;;i";	iÆ;o;;i;	iÆ;@;@	;i ;["background;o;	;o;;i";	iÆ;o;;i;	iÆ;@;@	;[ ;	iÆ;o;	;o;;i;	iÆ;o;;i;	iÆ;@;@	;
+@
+;o;	;@a;@f;@;@	;;u:Sass::Tree::IfNode†	[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_switch.scss:
+@lineiØ:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	iØ:@start_poso;;i;	iØ:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::PropNode:@valueo:Sass::Script::Funcall:@keywords{ :
+@args[o:Sass::Script::String;"top:
+@type:identifier;@	;	i∞;
+@
+;o;	;o;;i2;	i∞;o;;i/;	i∞;@;@	o:Sass::Script::List
+;[o; ;"paddle_bg;"paddle-bg;@	;	i∞;
+@
+;o;	;o;;i>;	i∞;o;;i>;	i∞;@;@	o:Sass::Script::Number;i :@numerator_units["%:@original"0%;	i∞;
+@
+;o;	;o;;iA;	i∞;o;;i?;	i∞;@;@	:@denominator_units[ ;@	:@separator:
+space;	i∞;
+@
+o; 
+;[o;;{ ;[o; ;"paddle_bg;"paddle-bg;@	;	i∞;
+@
+;o;	;o;;iT;	i∞;o;;iT;	i∞;@;@	o;!;i
+;"["%;#"5%;	i∞;
+@
+;o;	;o;;iX;	i∞;o;;iV;	i∞;@;@	;$[ ;"darken;@	:@splat0;	i∞;
+@
+;o;	;o;;iY;	i∞;o;;iC;	i∞;@;@	o;!;ii;"["%;#"	100%;	i∞;
+@
+;o;	;o;;i^;	i∞;o;;iZ;	i∞;@;@	;$[ ;@	;%;&;	i∞;
+@
+;"-moz-linear-gradient;@	;'0;	i∞;
+@
+;o;	;o;;i_;	i∞;o;;i;	i∞;@;@	:
+@tabsi ;["background:@value_source_rangeo;	;o;;i_;	i∞;o;;i;	i∞;@;@	:@children[ ;	i∞:@name_source_rangeo;	;o;;i;	i∞;o;;i;	i∞;@;@	;
+@
+;o;	;@R;@W;@;@	:@prop_syntax:newo;;o;;{ ;[o;;"top;;;@	;	i±;
+@
+;o;	;o;;i5;	i±;o;;i2;	i±;@;@	o; 
+;[o; ;"paddle_bg;"paddle-bg;@	;	i±;
+@
+;o;	;o;;iA;	i±;o;;iA;	i±;@;@	o;!;i ;"["%;#"0%;	i±;
+@
+;o;	;o;;iD;	i±;o;;iB;	i±;@;@	;$[ ;@	;%;&;	i±;
+@
+o; 
+;[o;;{ ;[o; ;"paddle_bg;"paddle-bg;@	;	i±;
+@
+;o;	;o;;iW;	i±;o;;iW;	i±;@;@	o;!;i
+;"["%;#"5%;	i±;
+@
+;o;	;o;;i[;	i±;o;;iY;	i±;@;@	;$[ ;"darken;@	;'0;	i±;
+@
+;o;	;o;;i\;	i±;o;;iF;	i±;@;@	o;!;ii;"["%;#"	100%;	i±;
+@
+;o;	;o;;ia;	i±;o;;i];	i±;@;@	;$[ ;@	;%;&;	i±;
+@
+;"-webkit-linear-gradient;@	;'0;	i±;
+@
+;o;	;o;;ib;	i±;o;;i;	i±;@;@	;(i ;["background;)o;	;o;;ib;	i±;o;;i;	i±;@;@	;*[ ;	i±;+o;	;o;;i;	i±;o;;i;	i±;@;@	;
+@
+;o;	;@ì;@ò;@;@	;,;-o;;o;";#{ ;$[o:Sass::Script::List
+;[o:Sass::Script::String;"to:
+@type:identifier;@	;	i≥;
+@
+;o;	;o;;i*;	i≥;o;;i(;	i≥;@;@	o;,;"bottom;-;.;@	;	i≥;
+@
+;o;	;o;;i1;	i≥;o;;i+;	i≥;@;@	;@	:@separator:
+space;	i≥;
+@
+o;+
+;[o; ;"paddle_bg;"paddle-bg;@	;	i≥;
+@
+;o;	;o;;i=;	i≥;o;;i=;	i≥;@;@	o;%;i ;&["%;'"0%;	i≥;
+@
+;o;	;o;;i@;	i≥;o;;i>;	i≥;@;@	;([ ;@	;/;0;	i≥;
+@
+o;+
+;[o;";#{ ;$[o; ;"paddle_bg;"paddle-bg;@	;	i≥;
+@
+;o;	;o;;iS;	i≥;o;;iS;	i≥;@;@	o;%;i
+;&["%;'"5%;	i≥;
+@
+;o;	;o;;iW;	i≥;o;;iU;	i≥;@;@	;([ ;"darken;@	;)0;	i≥;
+@
+;o;	;o;;iX;	i≥;o;;iB;	i≥;@;@	o;%;ii;&["%;'"	100%;	i≥;
+@
+;o;	;o;;i];	i≥;o;;iY;	i≥;@;@	;([ ;@	;/;0;	i≥;
+@
+;"linear-gradient;@	;)0;	i≥;
+@
+;o;	;o;;i^;	i≥;o;;i;	i≥;@;@	;i ;["background;o;	;o;;i^;	i≥;o;;i;	i≥;@;@	;[ ;	i≥;o;	;o;;i;	i≥;o;;i;	i≥;@;@	;
+@
+;o;	;@™;@Ø;@;@	;;o:Sass::Tree::CommentNode
+;["?/* Building the alternating colored sides of the switch */;-:silent;[ ;	iµ;
+@
+u;*Ÿ[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_switch.scss:
+@linei∂:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	i∂:@start_poso;;i;	i∂:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::PropNode:@valueo:Sass::Script::List;[	o;
+;[
+o:Sass::Script::Number;i:@numerator_units["px:@original"2px;	i∑;
+@
+;o;	;o;;i%;	i∑;o;;i";	i∑;@;@	:@denominator_units[ o;;i ;[ ;"0;	i∑;
+@
+;o;	;o;;i';	i∑;o;;i&;	i∑;@;@	;[ o;;i;["px;"	10px;	i∑;
+@
+;o;	;o;;i,;	i∑;o;;i(;	i∑;@;@	;[ o;;i ;[ ;"0;	i∑;
+@
+;o;	;o;;i.;	i∑;o;;i-;	i∑;@;@	;@&o:Sass::Script::Funcall:@keywords{ :
+@args[	o;;i ;[ ;"0;	i∑;
+@
+;o;	;o;;i5;	i∑;o;;i4;	i∑;@;@	;@&o;;i ;[ ;"0;	i∑;
+@
+;o;	;o;;i7;	i∑;o;;i6;	i∑;@;@	;@&o;;i ;[ ;"0;	i∑;
+@
+;o;	;o;;i9;	i∑;o;;i8;	i∑;@;@	;@&o;;f0.070000000000000007 QÏ;[ ;"	0.07;	i∑;
+@
+;o;	;o;;i>;	i∑;o;;i:;	i∑;@;@	;@&;"	rgba;@	:@splat0;	i∑;
+@
+;o;	;o;;i?;	i∑;o;;i/;	i∑;@;@	;@	:@separator:
+space;	i∑;
+@
+o;
+;[
+o;;iË;["px;"1000px;	i∏;
+@
+;o;	;o;;i(;	i∏;o;;i";	i∏;@;@	;[ o;;i ;[ ;"0;	i∏;
+@
+;o;	;o;;i*;	i∏;o;;i);	i∏;@;@	;@&o;;i ;[ ;"0;	i∏;
+@
+;o;	;o;;i,;	i∏;o;;i+;	i∏;@;@	;@&o;;iË;["px;"1000px;	i∏;
+@
+;o;	;o;;i3;	i∏;o;;i-;	i∏;@;@	;[ o; ;"positive_color;"positive-color;@	;	i∏;
+@
+;o;	;o;;iC;	i∏;o;;iC;	i∏;@;@	;@	;#;$;	i∏;
+@
+o;
+;[
+o;;i˘;["px;"	-2px;	iπ;
+@
+;o;	;o;;i&;	iπ;o;;i";	iπ;@;@	;[ o;;i ;[ ;"0;	iπ;
+@
+;o;	;o;;i(;	iπ;o;;i';	iπ;@;@	;@&o;;i;["px;"	10px;	iπ;
+@
+;o;	;o;;i-;	iπ;o;;i);	iπ;@;@	;[ o;;i ;[ ;"0;	iπ;
+@
+;o;	;o;;i/;	iπ;o;;i.;	iπ;@;@	;@&o;; { ;![	o;;i ;[ ;"0;	iπ;
+@
+;o;	;o;;i6;	iπ;o;;i5;	iπ;@;@	;@&o;;i ;[ ;"0;	iπ;
+@
+;o;	;o;;i8;	iπ;o;;i7;	iπ;@;@	;@&o;;i ;[ ;"0;	iπ;
+@
+;o;	;o;;i:;	iπ;o;;i9;	iπ;@;@	;@&o;;f0.070000000000000007 QÏ;[ ;"	0.07;	iπ;
+@
+;o;	;o;;i?;	iπ;o;;i;;	iπ;@;@	;@&;"	rgba;@	;"0;	iπ;
+@
+;o;	;o;;i@;	iπ;o;;i0;	iπ;@;@	;@	;#;$;	iπ;
+@
+o;
+;[
+o;;i˛¸;["px;"-1000px;	i∫;
+@
+;o;	;o;;i);	i∫;o;;i";	i∫;@;@	;[ o;;i ;[ ;"0;	i∫;
+@
+;o;	;o;;i+;	i∫;o;;i*;	i∫;@;@	;@&o;;i ;[ ;"0;	i∫;
+@
+;o;	;o;;i-;	i∫;o;;i,;	i∫;@;@	;@&o;;iË;["px;"1000px;	i∫;
+@
+;o;	;o;;i4;	i∫;o;;i.;	i∫;@;@	;[ o; ;"negative_color;"negative-color;@	;	i∫;
+@
+;o;	;o;;iD;	i∫;o;;iD;	i∫;@;@	;@	;#;$;	i∫;
+@
+;@	;#:
+comma;	i∑;o;	;o;;iD;	i∫;o;;i";	i∑;@;@	;
+@
+:
+@tabsi ;["-webkit-box-shadow:@value_source_rangeo;	;o;;iD;	i∫;o;;i";	i∑;@;@	:@children[ ;	i∑:@name_source_rangeo;	;o;;i ;	i∑;o;;i;	i∑;@;@	;
+@
+;o;	;@‹;@·;@;@	:@prop_syntax:newo;;o;+;[	o;+
+;[
+o;%;i;&["px;'"2px;	iº;
+@
+;o;	;o;;i#;	iº;o;;i ;	iº;@;@	;([ o;%;i ;&[ ;'"0;	iº;
+@
+;o;	;o;;i%;	iº;o;;i$;	iº;@;@	;([ o;%;i;&["px;'"	10px;	iº;
+@
+;o;	;o;;i*;	iº;o;;i&;	iº;@;@	;([ o;%;i ;&[ ;'"0;	iº;
+@
+;o;	;o;;i,;	iº;o;;i+;	iº;@;@	;(@…o;";#{ ;$[	o;%;i ;&[ ;'"0;	iº;
+@
+;o;	;o;;i3;	iº;o;;i2;	iº;@;@	;(@…o;%;i ;&[ ;'"0;	iº;
+@
+;o;	;o;;i5;	iº;o;;i4;	iº;@;@	;(@…o;%;i ;&[ ;'"0;	iº;
+@
+;o;	;o;;i7;	iº;o;;i6;	iº;@;@	;(@…o;%;f0.070000000000000007 QÏ;&[ ;'"	0.07;	iº;
+@
+;o;	;o;;i<;	iº;o;;i8;	iº;@;@	;(@…;"	rgba;@	;)0;	iº;
+@
+;o;	;o;;i=;	iº;o;;i-;	iº;@;@	;@	;/;0;	iº;
+@
+o;+
+;[
+o;%;iË;&["px;'"1000px;	iΩ;
+@
+;o;	;o;;i&;	iΩ;o;;i ;	iΩ;@;@	;([ o;%;i ;&[ ;'"0;	iΩ;
+@
+;o;	;o;;i(;	iΩ;o;;i';	iΩ;@;@	;(@…o;%;i ;&[ ;'"0;	iΩ;
+@
+;o;	;o;;i*;	iΩ;o;;i);	iΩ;@;@	;(@…o;%;i‘;&["px;'"
+980px;	iΩ;
+@
+;o;	;o;;i0;	iΩ;o;;i+;	iΩ;@;@	;([ o; ;"positive_color;"positive-color;@	;	iΩ;
+@
+;o;	;o;;i@;	iΩ;o;;i@;	iΩ;@;@	;@	;/;0;	iΩ;
+@
+o;+
+;[
+o;%;i˘;&["px;'"	-2px;	iæ;
+@
+;o;	;o;;i$;	iæ;o;;i ;	iæ;@;@	;([ o;%;i ;&[ ;'"0;	iæ;
+@
+;o;	;o;;i&;	iæ;o;;i%;	iæ;@;@	;(@…o;%;i;&["px;'"	10px;	iæ;
+@
+;o;	;o;;i+;	iæ;o;;i';	iæ;@;@	;([ o;%;i ;&[ ;'"0;	iæ;
+@
+;o;	;o;;i-;	iæ;o;;i,;	iæ;@;@	;(@…o;";#{ ;$[	o;%;i ;&[ ;'"0;	iæ;
+@
+;o;	;o;;i4;	iæ;o;;i3;	iæ;@;@	;(@…o;%;i ;&[ ;'"0;	iæ;
+@
+;o;	;o;;i6;	iæ;o;;i5;	iæ;@;@	;(@…o;%;i ;&[ ;'"0;	iæ;
+@
+;o;	;o;;i8;	iæ;o;;i7;	iæ;@;@	;(@…o;%;f0.070000000000000007 QÏ;&[ ;'"	0.07;	iæ;
+@
+;o;	;o;;i=;	iæ;o;;i9;	iæ;@;@	;(@…;"	rgba;@	;)0;	iæ;
+@
+;o;	;o;;i>;	iæ;o;;i.;	iæ;@;@	;@	;/;0;	iæ;
+@
+o;+
+;[
+o;%;i˛¸;&["px;'"-1000px;	iø;
+@
+;o;	;o;;i';	iø;o;;i ;	iø;@;@	;([ o;%;i ;&[ ;'"0;	iø;
+@
+;o;	;o;;i);	iø;o;;i(;	iø;@;@	;(@…o;%;i ;&[ ;'"0;	iø;
+@
+;o;	;o;;i+;	iø;o;;i*;	iø;@;@	;(@…o;%;iË;&["px;'"1000px;	iø;
+@
+;o;	;o;;i2;	iø;o;;i,;	iø;@;@	;([ o; ;"negative_color;"negative-color;@	;	iø;
+@
+;o;	;o;;iB;	iø;o;;iB;	iø;@;@	;@	;/;0;	iø;
+@
+;@	;/:
+comma;	iº;o;	;o;;iB;	iø;o;;i ;	iº;@;@	;
+@
+;i ;["box-shadow;o;	;o;;iB;	iø;o;;i ;	iº;@;@	;[ ;	iº;o;	;o;;i;	iº;o;;i;	iº;@;@	;
+@
+;o;	;@Ñ;@â;@;@	;;:@selector_source_rangeo;	;o;;i;	i¨;o;;i
+;	i¨;@;@	;	i¨:@parsed_ruleso:"Sass::Selector::CommaSequence:@members[o:Sass::Selector::Sequence;7[o:#Sass::Selector::SimpleSequence;7[o:Sass::Selector::Element	;["	span;" ;	i¨:@namespace0o:Sass::Selector::Pseudo
+;-:
+class:	@arg0;["last-child;@ó;	i¨;@ó;	i¨:@sourceso;;{ :@subject0;o;	;o;;i;	i;o;;i;	i;0;@ó;@ó;	i¨:
+@rule["span:last-child;
+@
+;o;	;o;;i;	i¿;o;;i
+;	i¨;@;@	o; ;!T;i ;[o; ;!T;i ;[o;;o; ;"paddle_bg;"paddle-bg;@	;	i≈;
+@
+;o;	;o;;i$;	i≈;o;;i;	i≈;@;@	;i ;["background;o;	;o;;i$;	i≈;o;;i;	i≈;@;@	;[ ;	i≈;o;	;o;;i;	i≈;o;;i;	i≈;@;@	;
+@
+;o;	;@≥;@∏;@;@	;;u;*¢	[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_switch.scss:
+@linei∆:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti ;	i∆:@start_poso;;i;	i∆:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::PropNode:@valueo:Sass::Script::Funcall:@keywords{ :
+@args[o:Sass::Script::String;"top:
+@type:identifier;@	;	i«;
+@
+;o;	;o;;i4;	i«;o;;i1;	i«;@;@	o:Sass::Script::List
+;[o; ;"paddle_bg;"paddle-bg;@	;	i«;
+@
+;o;	;o;;i@;	i«;o;;i@;	i«;@;@	o:Sass::Script::Number;i :@numerator_units["%:@original"0%;	i«;
+@
+;o;	;o;;iC;	i«;o;;iA;	i«;@;@	:@denominator_units[ ;@	:@separator:
+space;	i«;
+@
+o; 
+;[o;;{ ;[o; ;"paddle_bg;"paddle-bg;@	;	i«;
+@
+;o;	;o;;iV;	i«;o;;iV;	i«;@;@	o;!;i;"["%;#"10%;	i«;
+@
+;o;	;o;;i[;	i«;o;;iX;	i«;@;@	;$[ ;"darken;@	:@splat0;	i«;
+@
+;o;	;o;;i\;	i«;o;;iE;	i«;@;@	o;!;ii;"["%;#"	100%;	i«;
+@
+;o;	;o;;ia;	i«;o;;i];	i«;@;@	;$[ ;@	;%;&;	i«;
+@
+;"-moz-linear-gradient;@	;'0;	i«;
+@
+;o;	;o;;ib;	i«;o;;i;	i«;@;@	:
+@tabsi ;["background:@value_source_rangeo;	;o;;ib;	i«;o;;i;	i«;@;@	:@children[ ;	i«:@name_source_rangeo;	;o;;i;	i«;o;;i;	i«;@;@	;
+@
+;o;	;@R;@W;@;@	:@prop_syntax:newo;;o;;{ ;[o;;"top;;;@	;	i»;
+@
+;o;	;o;;i7;	i»;o;;i4;	i»;@;@	o; 
+;[o; ;"paddle_bg;"paddle-bg;@	;	i»;
+@
+;o;	;o;;iC;	i»;o;;iC;	i»;@;@	o;!;i ;"["%;#"0%;	i»;
+@
+;o;	;o;;iF;	i»;o;;iD;	i»;@;@	;$[ ;@	;%;&;	i»;
+@
+o; 
+;[o;;{ ;[o; ;"paddle_bg;"paddle-bg;@	;	i»;
+@
+;o;	;o;;iY;	i»;o;;iY;	i»;@;@	o;!;i;"["%;#"10%;	i»;
+@
+;o;	;o;;i^;	i»;o;;i[;	i»;@;@	;$[ ;"darken;@	;'0;	i»;
+@
+;o;	;o;;i_;	i»;o;;iH;	i»;@;@	o;!;ii;"["%;#"	100%;	i»;
+@
+;o;	;o;;id;	i»;o;;i`;	i»;@;@	;$[ ;@	;%;&;	i»;
+@
+;"-webkit-linear-gradient;@	;'0;	i»;
+@
+;o;	;o;;ie;	i»;o;;i;	i»;@;@	;(i ;["background;)o;	;o;;ie;	i»;o;;i;	i»;@;@	;*[ ;	i»;+o;	;o;;i;	i»;o;;i;	i»;@;@	;
+@
+;o;	;@ì;@ò;@;@	;,;-o;;o;";#{ ;$[o;+
+;[o;,;"to;-;.;@	;	i ;
+@
+;o;	;o;;i,;	i ;o;;i*;	i ;@;@	o;,;"bottom;-;.;@	;	i ;
+@
+;o;	;o;;i3;	i ;o;;i-;	i ;@;@	;@	;/;0;	i ;
+@
+o;+
+;[o; ;"paddle_bg;"paddle-bg;@	;	i ;
+@
+;o;	;o;;i?;	i ;o;;i?;	i ;@;@	o;%;i ;&["%;'"0%;	i ;
+@
+;o;	;o;;iB;	i ;o;;i@;	i ;@;@	;([ ;@	;/;0;	i ;
+@
+o;+
+;[o;";#{ ;$[o; ;"paddle_bg;"paddle-bg;@	;	i ;
+@
+;o;	;o;;iU;	i ;o;;iU;	i ;@;@	o;%;i;&["%;'"10%;	i ;
+@
+;o;	;o;;iZ;	i ;o;;iW;	i ;@;@	;([ ;"darken;@	;)0;	i ;
+@
+;o;	;o;;i[;	i ;o;;iD;	i ;@;@	o;%;ii;&["%;'"	100%;	i ;
+@
+;o;	;o;;i`;	i ;o;;i\;	i ;@;@	;([ ;@	;/;0;	i ;
+@
+;"linear-gradient;@	;)0;	i ;
+@
+;o;	;o;;ia;	i ;o;;i;	i ;@;@	;i ;["background;o;	;o;;ia;	i ;o;;i;	i ;@;@	;[ ;	i ;o;	;o;;i;	i ;o;;i;	i ;@;@	;
+@
+;o;	;@;@;@;@	;;;4o;	;o;;i;	iƒ;o;;i;	iƒ;@;@	;	iƒ;5o;6;7[o;8;7[o;9;7[o;:	;["	span;" ;	iƒ;;0o;<
+;-;=;>0;["last-child;@;	iƒ;@;	iƒ;?o;;{ ;@0;o;	;o;;i;	i;o;;i;	i;0;@;@;	iƒ;A["span:last-child;
+@
+;o;	;o;;i;	iÀ;o;;i;	iƒ;@;@	;4o;	;o;;i;	i√;o;;i
+;	i¬;@;@	;	i¬;5o;6;7[o;8;7[o;9;7[o:Sass::Selector::Parent;" ;	i¬o;<
+;-;=;>0;["
+hover;@,;	i¬;@,;	i¬;?o;;{ ;@0;o;	;o;;i;	i;o;;i;	i;0;@,o;8;7["
+o;9;7[o;B;@,;	i¬o;<
+;-;=;>0;["
+focus;@,;	i¬;@,;	i¬;?o;;{ ;@0;o;	;o;;i;	i;o;;i
+;	i;0;@,;@,;	i¬;A["&:hover,
+    &:focus;
+@
+;o;	;o;;i;	iÃ;o;;i
+;	i¬;@;@	o; ;!T;i ;[o;;o;,;"transparent;-;.;
+@
+;i ;["background;o;	;o;;i,;	iŒ;o;;i!;	iŒ;@;@	;[ ;	iŒ;o;	;o;;i;	iŒ;o;;i;	iŒ;@;@	;
+@
+;o;	;@P;@U;@;@	;;;4o;	;o;;i;	iŒ;o;;i
+;	iŒ;@;@	;	iŒ;5o;6;7[o;8;7[o;9;7[o;B;" ;	iŒo;<
+;-;=;>0;["active;@a;	iŒ;@a;	iŒ;?o;;{ ;@0;o;	;o;;i;	i;o;;i;	i;0;@a;@a;	iŒ;A["&:active;
+@
+;o;	;o;;i/;	iŒ;o;;i
+;	iŒ;@;@	o;	
+;
+["-/* Setting up the radius for switches */;;;[ ;i—;@u;OÚ[o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"radius:
+@name"radius:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_switch.scss:
+@linei“:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;i“:@start_poso;;i;i“:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;i“;@;o;	;o;;i;i“;o;;i;i“;@;@
+:@operand2o:Sass::Script::Bool	:@valueT;i“;@;o;	;o;;i;i“;o;;i;i“;@;@
+u:Sass::Tree::IfNodeq[o:Sass::Script::Variable:@underscored_name"radius:
+@name"radius:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_switch.scss:
+@linei÷:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	i÷:@start_poso;;i;	i÷:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::MixinNode:@keywords{ :
+@args[o; ;"radius;"radius;@	;	i◊;
+@
+;o;	;o;;i!;	i◊;o;;i!;	i◊;@;@	;"radius:@children[ :@splat0;	i◊;
+@
+;o;	;o;;i";	i◊;o;;i
+;	i◊;@;@	o:Sass::Tree::RuleNode:@has_childrenT:
+@tabsi ;[o;;{ ;[o:Sass::Script::Operation:@operator:
+minus:@operand1o; ;"radius;"radius;@	;	iÿ;
+@
+;o;	;o;;i3;	iÿ;o;;i3;	iÿ;@;@	;	iÿ;
+@
+;o;	;o;;i:;	iÿ;o;;i9;	iÿ;@;@	:@operand2o:Sass::Script::Number:@valuei:@numerator_units["px:@original"1px;	iÿ;
+@
+;o;	;o;;i9;	iÿ;o;;i6;	iÿ;@;@	:@denominator_units[ ;"radius;[ ;0;	iÿ;
+@
+;o;	;o;;i:;	iÿ;o;;i;	iÿ;@;@	:@selector_source_rangeo;	;o;;i;	iÿ;o;;i
+;	iÿ;@;@	;	iÿ:@parsed_ruleso:"Sass::Selector::CommaSequence:@members[o:Sass::Selector::Sequence;-[o:#Sass::Selector::SimpleSequence;-[o:Sass::Selector::Element	;["	span;" ;	iÿ:@namespace0o:Sass::Selector::Pseudo
+:
+@type:
+class:	@arg0;["last-child;@I;	iÿ;@I;	iÿ:@sourceso;;{ :@subject0;o;	;o;;i;	i;o;;i;	i;0;@I;@I;	iÿ:
+@rule["span:last-child;
+@
+;o;	;o;;i=;	iÿ;o;;i
+;	iÿ;@;@	[o:Sass::Tree::MixinNode:@keywords{ :
+@args[o:Sass::Script::Number;i	:@numerator_units["px:@original"4px;i”;@;o;	;o;;i;i”;o;;i;i”;@;@
+:@denominator_units[ ;"radius:@children[ :@splat0;i”;@;o;	;o;;i;i”;o;;i
+;i”;@;@
+o:Sass::Tree::RuleNode:@has_childrenT:
+@tabsi ;'[o; ;!{ ;"[o;#;i;$["px;%"3px;i‘;@;o;	;o;;i/;i‘;o;;i,;i‘;@;@
+;&[ ;"radius;'[ ;(0;i‘;@;o;	;o;;i0;i‘;o;;i;i‘;@;@
+:@selector_source_rangeo;	;o;;i;i‘;o;;i
+;i‘;@;@
+;i‘:@parsed_ruleso:"Sass::Selector::CommaSequence:@members[o:Sass::Selector::Sequence;/[o:#Sass::Selector::SimpleSequence;/[o:Sass::Selector::Element	;["	span;" ;i‘:@namespace0o:Sass::Selector::Pseudo
+:
+@type:
+class:	@arg0;["last-child;@J;i‘;@J;i‘:@sourceso;;{ :@subject0;o;	;o;;i;i;o;;i;i;0;@J;@J;i‘:
+@rule["span:last-child;@;o;	;o;;i3;i‘;o;;i
+;i‘;@;@
+;00;i¶;@;o;	;o;;i;i€;o;;i;i¶;@;!@o;	
+;
+["E/* We use this to quickly create switches with a single mixin */;;;[ ;i›;@o;6;T;%[[o;	;"transition_speed;"transition-speed;@;o;	;o;;i%;iﬁ;i;@;!@o;;"#switch_paddle_transition_speed;"#switch-paddle-transition-speed;@;iﬁ;@;o;	;o;;iE;iﬁ;o;;iE;iﬁ;@;!@[o;	;"transition_ease;"transition-ease;@;o;	;o;;iW;iﬁ;iG;@;!@o;;""switch_paddle_transition_ease;""switch-paddle-transition-ease;@;iﬁ;@;o;	;o;;iv;iﬁ;o;;iv;iﬁ;@;!@[o;	;"height;"height;@;o;	;o;;i;iﬁ;ix;@;!@o;;"switch_height_med;"switch-height-med;@;iﬁ;@;o;	;o;;iç;iﬁ;o;;iç;iﬁ;@;!@[o;	;"font_size;"font-size;@;o;	;o;;iô;iﬁ;iè;@;!@o;;"switch_font_size_med;"switch-font-size-med;@;iﬁ;@;o;	;o;;iØ;iﬁ;o;;iØ;iﬁ;@;!@[o;	;"line_height;"line-height;@;o;	;o;;iΩ;iﬁ;i±;@;!@o;,;
+f2.2999999999999998 ff;-["em;."
+2.3em;iﬁ;@;o;	;o;;i√;iﬁ;o;;iæ;iﬁ;@;!@;/[ [o;	;"paddle_bg;"paddle-bg;@;o;	;o;;iœ;iﬁ;i≈;@;!@o;;"switch_paddle_bg;"switch-paddle-bg;@;iﬁ;@;o;	;o;;i·;iﬁ;o;;i·;iﬁ;@;!@[o;	;"positive_color;"positive-color;@;o;	;o;;iÚ;iﬁ;i„;@;!@o;;"switch_positive_color;"switch-positive-color;@;iﬁ;@;o;	;o;;i	;iﬁ;o;;i	;iﬁ;@;!@[o;	;"negative_color;"negative-color;@;o;	;o;;i;iﬁ;i;@;!@o;;"switch_negative_color;"switch-negative-color;@;iﬁ;@;o;	;o;;i1;iﬁ;o;;i1;iﬁ;@;!@[o;	;"radius;"radius;@;o;	;o;;i:;iﬁ;i3;@;!@o;X	;
+F;iﬁ;@;o;	;o;;i@;iﬁ;o;;i;;iﬁ;@;!@[o;	;"base_style;"base-style;@;o;	;o;;iM;iﬁ;iB;@;!@o;X	;
+T;iﬁ;@;o;	;o;;iR;iﬁ;o;;iN;iﬁ;@;!@;"switch;[o;>;${ ;%[o;;"transition_speed;"transition-speed;@;iﬂ;@;o;	;o;;i.;iﬂ;o;;i.;iﬂ;@;!@o;;"transition_ease;"transition-ease;@;iﬂ;@;o;	;o;;i@;iﬂ;o;;i@;iﬂ;@;!@;"switch-base;[ ;00;iﬂ;@;o;	;o;;iA;iﬂ;o;;i;iﬂ;@;!@o;>;${ ;%[o;;"height;"height;@;i‡;@;o;	;o;;i$;i‡;o;;i$;i‡;@;!@o;;"font_size;"font-size;@;i‡;@;o;	;o;;i0;i‡;o;;i0;i‡;@;!@o;;"line_height;"line-height;@;i‡;@;o;	;o;;i>;i‡;o;;i>;i‡;@;!@;"switch-size;[ ;00;i‡;@;o;	;o;;i?;i‡;o;;i;i‡;@;!@o;>;${ ;%[
+o;;"paddle_bg;"paddle-bg;@;i·;@;o;	;o;;i(;i·;o;;i(;i·;@;!@o;;"positive_color;"positive-color;@;i·;@;o;	;o;;i9;i·;o;;i9;i·;@;!@o;;"negative_color;"negative-color;@;i·;@;o;	;o;;iJ;i·;o;;iJ;i·;@;!@o;;"radius;"radius;@;i·;@;o;	;o;;iS;i·;o;;iS;i·;@;!@o;;"base_style;"base-style;@;i·;@;o;	;o;;i`;i·;o;;i`;i·;@;!@;"switch-style;[ ;00;i·;@;o;	;o;;ia;i·;o;;i;i·;@;!@;00;iﬁ;@;o;	;o;;i;i‚;o;;i;iﬁ;@;!@u;O1![o:Sass::Script::Operation:@operator:neq:@operand1o:Sass::Script::Variable:@underscored_name"include_html_form_classes:
+@name"include-html-form-classes:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_switch.scss:
+@linei‰:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti$;i‰:@start_poso;;i$;i‰:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;i‰;@;o;	;o;;i.;i‰;o;;i
+;i‰;@;@
+:@operand2o:Sass::Script::Bool	:@valueF;i‰;@;o;	;o;;i-;i‰;o;;i(;i‰;@;@
+0[o:Sass::Tree::CommentNode
+;["/* Foundation Switches */:
+@type:normal:@children[ ;iÊ;@o:Sass::Tree::MediaNode;" :@has_childrenT:
+@tabsi :@query["	only" "screen;"[o;
+;["2/* Containing element for the radio switch */; :silent;"[ ;iÈ;@o:Sass::Tree::RuleNode;$T;%i ;"[o:Sass::Tree::MixinNode:@keywords{ :
+@args[ ;"switch;"[ :@splat0;iÎ;@;o;	;o;;i;iÎ;o;;i;iÎ;@;@
+o;
+;["/* Large radio switches */; ;';"[ ;iÌ;@o;(;$T;%i ;"[o;);*{ ;+[o;	;
+"switch_height_lrg;"switch-height-lrg;@
+;iÓ;@;o;	;o;;i=;iÓ;o;;i=;iÓ;@;@
+o;	;
+"switch_font_size_lrg;"switch-font-size-lrg;@
+;iÓ;@;o;	;o;;iT;iÓ;o;;iT;iÓ;@;@
+;"switch-size;"[ ;,0;iÓ;@;o;	;o;;iU;iÓ;o;;i;iÓ;@;@
+:@selector_source_rangeo;	;o;;i;iÓ;o;;i;iÓ;@;@
+;iÓ:@parsed_ruleso:"Sass::Selector::CommaSequence:@members[o:Sass::Selector::Sequence;0[o:#Sass::Selector::SimpleSequence;0[o:Sass::Selector::Parent;" ;iÓo:Sass::Selector::Class;["
+large;@X;iÓ;@X;iÓ:@sourceso;;{ :@subject0;o;	;o;;i;i;o;;i;i;0;@X;@X;iÓ:
+@rule["&.large;@;o;	;o;;iX;iÓ;o;;i;iÓ;@;@
+o;
+;["/* Small radio switches */; ;';"[ ;i;@o;(;$T;%i ;"[o;);*{ ;+[o;	;
+"switch_height_sml;"switch-height-sml;@
+;iÒ;@;o;	;o;;i=;iÒ;o;;i=;iÒ;@;@
+o;	;
+"switch_font_size_sml;"switch-font-size-sml;@
+;iÒ;@;o;	;o;;iT;iÒ;o;;iT;iÒ;@;@
+o:Sass::Script::Number;f2.1000000000000001 ÃÕ:@numerator_units["em:@original"
+2.1em;iÒ;@;o;	;o;;i[;iÒ;o;;iV;iÒ;@;@
+:@denominator_units[ ;"switch-size;"[ ;,0;iÒ;@;o;	;o;;i\;iÒ;o;;i;iÒ;@;@
+;-o;	;o;;i;iÒ;o;;i;iÒ;@;@
+;iÒ;.o;/;0[o;1;0[o;2;0[o;3;" ;iÒo;4;["
+small;@é;iÒ;@é;iÒ;5o;;{ ;60;o;	;o;;i;i;o;;i;i;0;@é;@é;iÒ;7["&.small;@;o;	;o;;i_;iÒ;o;;i;iÒ;@;@
+o;
+;["/* Tiny radio switches */; ;';"[ ;iÛ;@o;(;$T;%i ;"[o;);*{ ;+[o;	;
+"switch_height_tny;"switch-height-tny;@
+;iÙ;@;o;	;o;;i<;iÙ;o;;i<;iÙ;@;@
+o;	;
+"switch_font_size_tny;"switch-font-size-tny;@
+;iÙ;@;o;	;o;;iS;iÙ;o;;iS;iÙ;@;@
+o;8;f1.8999999999999999 ff;9["em;:"
+1.9em;iÙ;@;o;	;o;;iZ;iÙ;o;;iU;iÙ;@;@
+;;[ ;"switch-size;"[ ;,0;iÙ;@;o;	;o;;i[;iÙ;o;;i;iÙ;@;@
+;-o;	;o;;i;iÙ;o;;i;iÙ;@;@
+;iÙ;.o;/;0[o;1;0[o;2;0[o;3;" ;iÙo;4;["	tiny;@…;iÙ;@…;iÙ;5o;;{ ;60;o;	;o;;i;i;o;;i;i;0;@…;@…;iÙ;7["&.tiny;@;o;	;o;;i^;iÙ;o;;i;iÙ;@;@
+o;
+;["%/* Add a radius to the switch */; ;';"[ ;iˆ;@o;(;$T;%i ;"[o;);*{ ;+[o;8;i	;9["px;:"4px;i˜;@;o;	;o;;i*;i˜;o;;i';i˜;@;@
+;;[ ;"radius;"[ ;,0;i˜;@;o;	;o;;i+;i˜;o;;i;i˜;@;@
+o;(;$T;%i ;"[o;);*{ ;+[o;8;i;9["px;:"3px;i¯;@;o;	;o;;i2;i¯;o;;i/;i¯;@;@
+;;[ ;"radius;"[ ;,0;i¯;@;o;	;o;;i3;i¯;o;;i;i¯;@;@
+;-o;	;o;;i;i¯;o;;i;i¯;@;@
+;i¯;.o;/;0[o;1;0[o;2;0[o:Sass::Selector::Element	;["	span;" ;i¯:@namespace0o:Sass::Selector::Pseudo
+; :
+class:	@arg0;["last-child;@;i¯;@;i¯;5o;;{ ;60;o;	;o;;i;i;o;;i;i;0;@;@;i¯;7["span:last-child;@;o;	;o;;i6;i¯;o;;i;i¯;@;@
+;-o;	;o;;i;i˜;o;;i;i˜;@;@
+;i˜;.o;/;0[o;1;0[o;2;0[o;3;" ;i˜o;4;["radius;@#;i˜;@#;i˜;5o;;{ ;60;o;	;o;;i;i;o;;i;i;0;@#;@#;i˜;7["&.radius;@;o;	;o;;i;i˘;o;;i;i˜;@;@
+o;
+;["8/* Make the switch completely round, like a pill */; ;';"[ ;i˚;@o;(;$T;%i ;"[o;);*{ ;+[o;8;iË;9["px;:"1000px;i¸;@;o;	;o;;i,;i¸;o;;i&;i¸;@;@
+;;[ ;"radius;"[ ;,0;i¸;@;o;	;o;;i-;i¸;o;;i;i¸;@;@
+o;(;$T;%i ;"[o;);*{ ;+[o;8;iÁ;9["px;:"
+999px;i˝;@;o;	;o;;i5;i˝;o;;i0;i˝;@;@
+;;[ ;"radius;"[ ;,0;i˝;@;o;	;o;;i6;i˝;o;;i ;i˝;@;@
+;-o;	;o;;i;i˝;o;;i;i˝;@;@
+;i˝;.o;/;0[o;1;0[o;2;0[o;<	;["	span;" ;i˝;=0o;>
+; ;?;@0;["last-child;@e;i˝;@e;i˝;5o;;{ ;60;o;	;o;;i;i;o;;i;i;0;@e;@e;i˝;7["span:last-child;@;o;	;o;;i9;i˝;o;;i;i˝;@;@
+o;(;$T;%i ;"[o:Sass::Tree::PropNode;o:Sass::Script::Funcall;*{ ;+[o;8;i ;9[ ;:"0;i˛;@;o;	;o;;i';i˛;o;;i&;i˛;@;@
+;;[ o; ;:	plus;o;	;
+"switch_label_side_padding;"switch-label-side-padding;@
+;i˛;@;o;	;o;;iC;i˛;o;;iC;i˛;@;@
+;i˛;@;o;	;o;;iH;i˛;o;;iG;i˛;@;@
+;o;8;i;9[ ;:"3;i˛;@;o;	;o;;iG;i˛;o;;iF;i˛;@;@
+;;@;"emCalc;@
+;,0;i˛;@;o;	;o;;iH;i˛;o;;i;i˛;@;@
+;%i ;["padding:@value_source_rangeo;	;o;;iH;i˛;o;;i;i˛;@;@
+;"[ ;i˛:@name_source_rangeo;	;o;;i;i˛;o;;i;i˛;@;@
+;@;o;	;@ó;@ú;@;@
+:@prop_syntax:new;-o;	;o;;i;i˛;o;;i;i˛;@;@
+;i˛;.o;/;0[o;1;0[o;2;0[o;<	;["
+label;" ;i˛;=0;@™;i˛;5o;;{ ;60;o;	;o;;i;i;o;;i;i;0;@™;@™;i˛;7["
+label;@;o;	;o;;iK;i˛;o;;i;i˛;@;@
+;-o;	;o;;i;i¸;o;;i;i¸;@;@
+;i¸;.o;/;0[o;1;0[o;2;0[o;3;" ;i¸o;4;["
+round;@ø;i¸;@ø;i¸;5o;;{ ;60;o;	;o;;i;i;o;;i;i;0;@ø;@ø;i¸;7["&.round;@;o;	;o;;i;iˇ;o;;i;i¸;@;@
+;-o;	;o;;i;iÍ;o;;i
+;iÍ;@;@
+;iÍ;.o;/;0[o;1;0[o;2;0[o;<	;["div;" ;iÍ;=0o;4;["switch;@Ÿ;iÍ;@Ÿ;iÍ;5o;;{ ;60;o;	;o;;i;i;o;;i;i;0;@Ÿ;@Ÿ;iÍ;7["div.switch;@;o;	;o;;i;i;o;;i
+;iÍ;@;@
+u:Sass::Tree::IfNode[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_switch.scss:
+@linei:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	i:@start_poso;;i;	i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::DirectiveNode:@value["@-webkit-keyframes "webkitSiblingBugfix" :@has_childrenT:@children[o:Sass::Tree::RuleNode;T:
+@tabsi ;[o:Sass::Tree::PropNode;o:Sass::Script::String;"relative:
+@type:identifier;
+@
+;i ;["position:@value_source_rangeo;	;o;;i`;	i;o;;iX;	i;@;@	;[ ;	i:@name_source_rangeo;	;o;;iV;	i;o;;iN;	i;@;@	;
+@
+;o;	;@!;@&;@;@	:@prop_syntax:new:@selector_source_rangeo;	;o;;iL;	i;o;;iG;	i;@;@	;	i:@parsed_ruleso:"Sass::Selector::CommaSequence:@members[o:Sass::Selector::Sequence;)[o:#Sass::Selector::SimpleSequence;)[o:Sass::Selector::Element	;["	from;" ;	i:@namespace0;@4;	i:@sourceso;;{ :@subject0;o;	;o;;i
+;	i;o;;i;	i;0;@4;@4;	i:
+@rule["	from;
+@
+;o;	;o;;ic;	i;o;;iG;	i;@;@	o;;T;i ;[o;;o;;"relative; ;!;
+@
+;i ;["position;"o;	;o;;i{;	i;o;;is;	i;@;@	;[ ;	i;#o;	;o;;iq;	i;o;;ii;	i;@;@	;
+@
+;o;	;@G;@L;@;@	;$;%;&o;	;o;;ig;	i;o;;id;	i;@;@	;	i;'o;(;)[o;*;)[o;+;)[o;,	;["to;" ;	i;-0;@Z;	i;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@Z;@Z;	i;0["to;
+@
+;o;	;o;;i~;	i;o;;id;	i;@;@	;	i;
+@
+;o;	;o;;i{;	i;o;;i;	i;@;@	;iÁ;@;o;	;o;;i	;i;o;;i;iÁ;@;@
+;i;@;o;	;o;;i;i;o;;i;i;@;!@

@@ -1,0 +1,226 @@
+@import "base";
+
+
+
+h2, h3, h4, h5, h6 {
+    color: lighten(black, 60%);
+    a {
+        color: lighten(black, 80%);
+        &:hover {
+            color: lighten(black, 50%);
+        }
+    }
+}
+
+.main a {
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+/* -----------------------------------------
+  buttons
+   ----------------------------------------- */
+
+button,
+.print_pdf a {
+    @include button-default;
+}
+
+/* -----------------------------------------
+  top-bar
+   ----------------------------------------- */
+
+header {
+    margin-bottom: 260px;
+}
+
+.contain-to-grid {
+    @include transparent-blk(0.4);
+    .top-bar {
+        background: none;
+        .top-bar-section {
+            ul#main-menu {
+                background: none;
+                > li {
+                    > a {
+                        background: none;
+                        text-transform: uppercase;
+                        @extend %pt-light;
+                    }
+                }
+            }
+            .has-dropdown {
+                li a {
+                    background: none;
+                    &:hover {
+                        @include transparent-blk(0.3);
+                    }
+                }
+                .dropdown {
+                    @include transparent-blk(0.4);
+                    @include border-bottom-radius(25px);
+                    padding-bottom: emCalc(25px);
+                }
+                > a:after {
+                    border-color: #fff transparent transparent transparent;
+                }
+            }
+        }
+    }
+}
+
+/* -----------------------------------------
+  slideshow
+   ----------------------------------------- */
+
+.slideshow-region {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-height: 300px;
+    z-index: -1;
+    .views_slideshow_cycle_teaser_section {
+        width: 100% !important;
+        position: relative;
+        max-height: 300px;
+        overflow: hidden;
+        border-bottom: 3px solid lighten(black, 50%);
+        .views_slideshow_slide {
+            margin-top: -25%;
+            width: 100% !important;
+            .field-slideshow {
+                width: 100% !important;
+                img {
+                    width: 100% !important;
+                }
+                &:before {
+                    content: "";
+                    background: url("../images/overlay-dk.svg") repeat scroll 0 0 rgba(0, 0, 0, 0);
+                    //@include box-shadow(lighten(black, 20%) 0 0 200px 0 inset);
+                    height: 100%;
+                    left: 0;
+                    position: absolute;
+                    top: 0;
+                    width: 100%;
+                }
+            }
+        }
+    }
+}
+
+/* -----------------------------------------
+  Store Locator
+   ----------------------------------------- */
+
+.store .title {
+    @extend %pt-light;
+}
+
+.storelocator-panel {
+    .location-search {
+        h4 {
+            font-size: emCalc(24px);
+        }
+        input {
+            @include form-element;
+            margin-bottom: 0;
+        }
+    }
+    .store-list {
+        li {
+            &.highlighted,
+            &.highlighted:hover {
+                background: lighten(black, 80%);
+            }
+        }
+    }
+}
+
+/* -----------------------------------------
+  Sidebar
+   ----------------------------------------- */
+aside {
+    .saa-search {
+        input[type="text"].form-text {
+            @include prefix-postfix-base;
+            @include grid-column($columns: 8, $float: left);
+        }
+        button {
+            @include grid-column($columns: 4);
+            @include button-size($padding, $full-width, $is-input);
+        }
+    }
+    h2 {
+        font-size: emCalc(32px);
+    }
+    .date-nav {
+        padding: 0;
+    }
+}
+
+/* -----------------------------------------
+  Footer Group
+   ----------------------------------------- */
+
+#footer-grp {
+    margin-top: 80px;
+    @include box-shadow(lighten(black, 50%) 0 0 80px 0);
+    border-top: 1px solid lighten(black, 60%);
+    background: $orange;
+    .footer-bg {
+        padding: emCalc(10px) 0;
+        background: darken($orange, 3%);
+        .copyright {
+            font-size: emCalc(14px);
+            color: #fff;
+            @extend %pt-light;
+        }
+    }
+    h2, h3, h4, h5, h6, p {
+        color: #fff;
+    }
+    footer p {
+        color: lighten($orange, 20%);
+        font-size: emCalc(12px);
+        a {
+            color: lighten($orange, 30%);
+        }
+    }
+}
+
+/* -----------------------------------------
+  Home Page
+   ----------------------------------------- */
+
+.block-views-calendar-block-2 {
+    @include panel;
+}
+
+/* -----------------------------------------
+  Meeting List
+   ----------------------------------------- */
+
+.view-meeting-list {
+    .level_1 {
+        h3 {
+            background: lighten(black, 80%);
+            color: white;
+            padding: emCalc(4px) emCalc(10px);
+        }
+    }
+    .views-row {
+        margin-bottom: emCalc(20px);
+        margin-left: emCalc(20px);
+    }
+}
+
+/* -----------------------------------------
+  Calendar fixes
+   ----------------------------------------- */
+.view-calendar {
+    .item-list ul li {
+        margin: 0;
+    }
+}

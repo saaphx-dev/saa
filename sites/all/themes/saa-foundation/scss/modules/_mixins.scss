@@ -1,0 +1,25 @@
+
+$padding: $button-sml;
+$bg: #dbdbdb;
+$radius: true;
+$full-width: false;
+$disabled: false;
+$is-input: false;
+$active: true;
+
+@mixin button-default {
+
+        @include button($padding, $bg, $radius, $full-width, $disabled, $is-input);
+        color: #7c7d7d;
+        @include text-shadow(rgba(white, 0.5) 1px 1px 0);
+        @include background-image(linear-gradient(#e7e9ea, #b2b2b2));
+        @include box-shadow(#dbdbdb 1px 1px 3px);
+        @include single-transition;
+
+}
+
+@mixin transparent-blk($opacity) {
+  background: rgb(0, 0, 0);
+  /* Fall-back for browsers that don't support rgba */
+  background: rgba(0, 0, 0, $opacity);
+}

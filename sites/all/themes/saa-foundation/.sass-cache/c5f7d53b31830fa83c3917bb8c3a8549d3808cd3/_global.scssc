@@ -1,0 +1,1484 @@
+3.3.0.alpha.134 (Bleeding Edge)
+3a0b05c8d48c07eae82eceb6571578ab9de3cd5e
+o:Sass::Tree::RootNode:@has_childrenT:@template"¥(//
+// Global Foundation Mixins
+//
+
+$experimental: true !default;
+
+// We use this to control border radius.
+@mixin radius($radius:$global-radius) {
+  @if $radius {
+    @if $experimental {
+      -webkit-border-radius: $radius;
+    }
+    border-radius: $radius;
+  }
+}
+
+// We use this to create equal side border radius on elements.
+@mixin side-radius($side, $radius:$global-radius) {
+  @if $side == left {
+    @if $experimental {
+      -moz-border-radius-bottomleft: $radius;
+      -moz-border-radius-topleft: $radius;
+      -webkit-border-bottom-left-radius: $radius;
+      -webkit-border-top-left-radius: $radius;
+    }
+    border-bottom-left-radius: $radius;
+    border-top-left-radius: $radius;
+  }
+  @else if $side == right {
+    @if $experimental {
+      -moz-border-radius-topright: $radius;
+      -moz-border-radius-bottomright: $radius;
+      -webkit-border-top-right-radius: $radius;
+      -webkit-border-bottom-right-radius: $radius;
+    }
+    border-top-right-radius: $radius;
+    border-bottom-right-radius: $radius;
+  }
+  @else if $side == top {
+    @if $experimental {
+      -moz-border-radius-topright: $radius;
+      -moz-border-radius-topleft: $radius;
+      -webkit-border-top-right-radius: $radius;
+      -webkit-border-top-left-radius: $radius;
+    }
+    border-top-right-radius: $radius;
+    border-top-left-radius: $radius;
+  }
+  @else if $side == bottom {
+    @if $experimental {
+      -moz-border-radius-bottomright: $radius;
+      -moz-border-radius-bottomleft: $radius;
+      -webkit-border-bottom-right-radius: $radius;
+      -webkit-border-bottom-left-radius: $radius;
+    }
+    border-bottom-right-radius: $radius;
+    border-bottom-left-radius: $radius;
+  }
+}
+
+// We can control whether or not we have inset shadows edges.
+@mixin inset-shadow($active:true) {
+  @if $experimental {
+    -webkit-box-shadow: $shiny-edge-size $shiny-edge-color inset;
+  }
+  box-shadow: $shiny-edge-size $shiny-edge-color inset;
+
+  @if $active { &:active {
+    @if $experimental {
+      -webkit-box-shadow: $shiny-edge-size $shiny-edge-active-color inset;
+    }
+    box-shadow: $shiny-edge-size $shiny-edge-active-color inset; } }
+}
+
+// We use this to add transitions to elements
+@mixin single-transition($property:all, $speed:300ms, $ease:ease-out) {
+  @if $experimental {
+    -webkit-transition: $property $speed $ease;
+    -moz-transition: $property $speed $ease;
+  }
+  transition: $property $speed $ease;
+}
+
+// We use this to add box-sizing across browser prefixes
+@mixin box-sizing($type:border-box) {
+  @if $experimental {
+    -moz-box-sizing: $type;
+    -webkit-box-sizing: $type;
+  }
+  box-sizing: $type;
+}
+
+// We use this to create equilateral triangles
+@mixin css-triangle($triangle-size, $triangle-color, $triangle-direction) {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border: inset $triangle-size;
+  @if ($triangle-direction == top) {
+    border-color: $triangle-color transparent transparent transparent;
+    border-top-style: solid;
+  }
+  @if ($triangle-direction == bottom) {
+    border-color: transparent transparent $triangle-color transparent;
+    border-bottom-style: solid;
+  }
+  @if ($triangle-direction == left) {
+    border-color: transparent transparent transparent $triangle-color;
+    border-left-style: solid;
+  }
+  @if ($triangle-direction == right) {
+    border-color: transparent $triangle-color transparent transparent;
+    border-right-style: solid;
+  }
+}
+
+// We use this to do clear floats
+@mixin clearfix() {
+  *zoom:1;
+  &:before, &:after { content: " "; display: table; }
+  &:after { clear: both; }
+}
+
+
+// We use this to add a glowing effect to block elements
+@mixin block-glowing-effect($selector:focus, $fade-time:300ms, $glowing-effect-color:fade-out($primary-color, .25)) {
+  @if $experimental {
+    -webkit-transition: -webkit-box-shadow $fade-time, border-color $fade-time ease-in-out;
+    -moz-transition: -moz-box-shadow $fade-time, border-color $fade-time ease-in-out;
+  }
+  transition: box-shadow $fade-time, border-color $fade-time ease-in-out;
+
+  &:#{$selector} {
+    @if $experimental {
+      -webkit-box-shadow: 0 0 5px $glowing-effect-color;
+      -moz-box-shadow: 0 0 5px $glowing-effect-color;
+    }
+    box-shadow: 0 0 5px $glowing-effect-color;
+    border-color: $glowing-effect-color;
+  }
+}
+
+//
+// Foundation Variables
+//
+
+// The default font-size is set to 100% of the browser style sheet (usually 16px)
+// for compatibility with brower-based text zoom or user-set defaults.
+
+// Since the typical default browser font-size is 16px, that makes the calculation for grid size.
+// If you want your base font-size to be different and not have it effect the grid breakpoints,
+// set $em-base to $base-font-size and make sure $base-font-size is a px value.
+$base-font-size: 100% !default;
+
+// $base-line-height is 24px while $base-font-size is 16px
+$base-line-height: 150% !default;
+
+// This is the default html and body font-size for the base em value.
+$em-base: 16 !default;
+
+// It strips the unit of measure and returns it
+@function strip-unit($num) {
+  @return $num / ($num * 0 + 1);
+}
+
+// Converts "px" to "em" using the ($)em-base
+@function convert-to-em($value)  {
+  $value: strip-unit($value) / strip-unit($em-base) * 1em;
+  @if ($value == 0em) { $value: 0; } // Turn 0em into 0
+  @return $value;
+}
+
+// Working in ems is annoying. Think in pixels by using this handy function, emCalc(#)
+// Just enter the number, no need to mention "px"
+@function emCalc($values...) {
+  $max: length($values); // Get the total number of parameters passed
+
+  // If there is only 1 parameter, then return it as an integer.
+  // This is done because a list can't be multiplied or divided even if it contains a single value
+  @if $max == 1 { @return convert-to-em(nth($values, 1)); }
+
+  $emValues: (); // This will eventually store the converted $values in a list
+  @for $i from 1 through $max {
+    $emValues: append($emValues, convert-to-em(nth($values, $i)));
+  }
+  @return $emValues;
+}
+
+// Maybe you want to create rems and pixels
+// @function remCalc($pxWidth) {
+//   @return $pxWidth / $em-base * 1rem;
+// }
+
+// We use these to control various global styles
+$body-bg: #fff !default;
+$body-font-color: #222 !default;
+$body-font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif !default;
+$body-font-weight: normal !default;
+$body-font-style: normal !default;
+
+// We use this to control font-smoothing
+$font-smoothing: subpixel-antialiased !default;
+
+// We use these to control text direction settings
+$text-direction: ltr !default;
+
+// NOTE: No need to change this conditional statement, $text-direction variable controls it all.
+$default-float: left !default;
+$opposite-direction: right !default;
+@if $text-direction == ltr {
+  $default-float: left;
+  $opposite-direction: right;
+} @else {
+  $default-float: right;
+  $opposite-direction: left;
+}
+
+// We use these as default colors throughout
+$primary-color: #2ba6cb !default;
+$secondary-color: #e9e9e9 !default;
+$alert-color: #c60f13 !default;
+$success-color: #5da423 !default;
+
+// We use these to make sure border radius matches unless we want it different.
+$global-radius: 3px !default;
+$global-rounded: 1000px !default;
+
+// We use these to control inset shadow shiny edges and depressions.
+$shiny-edge-size: 0 1px 0 !default;
+$shiny-edge-color: rgba(#fff, .5) !default;
+$shiny-edge-active-color: rgba(#000, .2) !default;
+
+// We use this to control whether or not CSS classes come through in the gem files.
+$include-html-classes: true !default;
+$include-print-styles: true !default;
+$include-html-global-classes: $include-html-classes !default;
+
+// Media Queries
+$small-screen: 768px !default;
+$medium-screen: 1280px !default;
+$large-screen: 1440px !default;
+
+$screen: "only screen" !default;
+$small: "only screen and (min-width: #{$small-screen})" !default;
+$medium: "only screen and (min-width:#{$medium-screen})" !default;
+$large: "only screen and (min-width:#{$large-screen})" !default;
+$landscape: "only screen and (orientation: landscape)" !default;
+$portrait: "only screen and (orientation: portrait)" !default;
+
+//We use this as cursors values for enabling the option of having custom cursors in the whole site's stylesheet
+$cursor-crosshair-value: crosshair !default;
+$cursor-default-value: default !default;
+$cursor-pointer-value: pointer !default;
+$cursor-help-value: help !default;
+$cursor-text-value: text !default;
+
+
+@if $include-html-global-classes {
+
+  // Set box-sizing globally to handle padding and border widths
+  *,
+  *:before,
+  *:after {
+    @include box-sizing(border-box);
+  }
+
+  html,
+  body { font-size: $base-font-size; }
+
+  // Default body styles
+  body {
+    background: $body-bg;
+    color: $body-font-color;
+    padding: 0;
+    margin: 0;
+    font-family: $body-font-family;
+    font-weight: $body-font-weight;
+    font-style: $body-font-style;
+    line-height: 1; // Set to $base-line-height to take on browser default of 150%
+    position: relative;
+    cursor: $cursor-default-value;
+  }
+
+a:hover { cursor: $cursor-pointer-value; }
+
+  // Override outline from normalize, we don't like it
+  a:focus { outline: none; }
+
+  // Grid Defaults to get images and embeds to work properly
+  img,
+  object,
+  embed { max-width: 100%; height: auto; }
+
+  object,
+  embed { height: 100%; }
+  img { -ms-interpolation-mode: bicubic; }
+
+  #map_canvas,
+  .map_canvas {
+    img,
+    embed,
+    object { max-width: none !important;
+    }
+  }
+
+  // Miscellaneous useful HTML classes
+  .left         { float: left !important; }
+  .right        { float: right !important; }
+  .text-left    { text-align: left !important; }
+  .text-right   { text-align: right !important; }
+  .text-center  { text-align: center !important; }
+  .text-justify { text-align: justify !important; }
+  .hide         { display: none; }
+
+  // Font smoothing
+  // Antialiased font smoothing works best for light text on a dark background.
+  // Apply to single elements instead of globally to body.
+  // Note this only applies to webkit-based desktop browsers on the Mac.
+  .antialiased { -webkit-font-smoothing: antialiased; }
+
+  // Get rid of gap under images by making them display: inline-block; by default
+  img {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  //
+  // Global resets for forms
+  //
+
+  // Make sure textarea takes on height automatically
+  textarea { height: auto; min-height: 50px; }
+
+  // Make select elements 100% width by default
+  select { width: 100%; }
+
+}
+:@children[Uo:Sass::Tree::CommentNode
+:@value[")/*
+ * Global Foundation Mixins
+ * */:
+@type:silent;[ :
+@linei:@options{ o:Sass::Tree::VariableNode:
+@expro:Sass::Script::Bool	;
+T;i
+;@:@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;i
+:@start_poso;;i;i
+:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@name"experimental;[ ;i
+:@guarded"!default;@;o;	;o;;i";i
+;o;;i;i
+;@;@o;	
+;
+["0/* We use this to control border radius. */;;;[ ;i;@o:Sass::Tree::MixinDefNode;T:
+@args[[o:Sass::Script::Variable	:@underscored_name"radius;"radius;@;o;	;o;;i;i;i;@;@o;#;$"global_radius;"global-radius:@filename@;i;@;o;	;o;;i*;i;o;;i*;i;@;@;"radius;[u:Sass::Tree::IfNode:[o:Sass::Script::Variable:@underscored_name"radius:
+@name"radius:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	i:@start_poso;;i;	i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[u:Sass::Tree::IfNode[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	i:@start_poso;;i;	i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::PropNode:@valueo; ;"radius;"radius;@	;	i;
+@
+;o;	;o;;i*;	i;o;;i#;	i;@;@	:
+@tabsi ;["-webkit-border-radius:@value_source_rangeo;	;o;;i*;	i;o;;i#;	i;@;@	:@children[ ;	i:@name_source_rangeo;	;o;;i!;	i;o;;i;	i;@;@	;
+@
+;o;	;@;@";@;@	:@prop_syntax:newo:Sass::Tree::PropNode:@valueo; ;"radius;"radius;@	;	i;
+@
+;o;	;o;;i ;	i;o;;i;	i;@;@	:
+@tabsi ;["border-radius:@value_source_rangeo;	;o;;i ;	i;o;;i;	i;@;@	:@children[ ;	i:@name_source_rangeo;	;o;;i;	i;o;;i
+;	i;@;@	;
+@
+;o;	;@;@#;@;@	:@prop_syntax:new:@splat0;i;@;o;	;o;;i;i;o;;i;i;@;@o;	
+;
+["F/* We use this to create equal side border radius on elements. */;;;[ ;i;@o;!;T;"[[o;#	;$"	side;"	side;@;o;	;o;;i;i;i;@;@0[o;#	;$"radius;"radius;@;o;	;o;;i';i;i ;@;@o;#;$"global_radius;"global-radius;%@;i;@;o;	;o;;i6;i;o;;i6;i;@;@;"side-radius;[u;&Ì+[o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"	side:
+@name"	side:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;i:@start_poso;;i;i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;i;@;o;	;o;;i;i;o;;i;i;@;@
+:@operand2o:Sass::Script::String:@value"	left:
+@type:identifier;@
+;i;@;o;	;o;;i;i;o;;i;i;@;@
+u:Sass::Tree::IfNodeÙ [o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"	side:
+@name"	side:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei":@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;i":@start_poso;;i;i":@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;i";@;o;	;o;;i ;i";o;;i;i";@;@
+:@operand2o:Sass::Script::String:@value"
+right:
+@type:identifier;@
+;i";@;o;	;o;;i;i";o;;i;i";@;@
+u:Sass::Tree::IfNodeÙ[o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"	side:
+@name"	side:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei,:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;i,:@start_poso;;i;i,:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;i,;@;o;	;o;;i;i,;o;;i;i,;@;@
+:@operand2o:Sass::Script::String:@value"top:
+@type:identifier;@
+;i,;@;o;	;o;;i;i,;o;;i;i,;@;@
+u:Sass::Tree::IfNode[o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"	side:
+@name"	side:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei6:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;i6:@start_poso;;i;i6:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;i6;@;o;	;o;;i!;i6;o;;i;i6;@;@
+:@operand2o:Sass::Script::String:@value"bottom:
+@type:identifier;@
+;i6;@;o;	;o;;i ;i6;o;;i;i6;@;@
+0[u:Sass::Tree::IfNode[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei7:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	i7:@start_poso;;i;	i7:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[	o:Sass::Tree::PropNode:@valueo; ;"radius;"radius;@	;	i8;
+@
+;o;	;o;;i3;	i8;o;;i,;	i8;@;@	:
+@tabsi ;["#-moz-border-radius-bottomright:@value_source_rangeo;	;o;;i3;	i8;o;;i,;	i8;@;@	:@children[ ;	i8:@name_source_rangeo;	;o;;i*;	i8;o;;i;	i8;@;@	;
+@
+;o;	;@;@";@;@	:@prop_syntax:newo;;o; ;"radius;"radius;@	;	i9;
+@
+;o;	;o;;i2;	i9;o;;i+;	i9;@;@	;i ;[""-moz-border-radius-bottomleft;o;	;o;;i2;	i9;o;;i+;	i9;@;@	;[ ;	i9;o;	;o;;i);	i9;o;;i;	i9;@;@	;
+@
+;o;	;@.;@3;@;@	;;o;;o; ;"radius;"radius;@	;	i:;
+@
+;o;	;o;;i7;	i:;o;;i0;	i:;@;@	;i ;["'-webkit-border-bottom-right-radius;o;	;o;;i7;	i:;o;;i0;	i:;@;@	;[ ;	i:;o;	;o;;i.;	i:;o;;i;	i:;@;@	;
+@
+;o;	;@?;@D;@;@	;;o;;o; ;"radius;"radius;@	;	i;;
+@
+;o;	;o;;i6;	i;;o;;i/;	i;;@;@	;i ;["&-webkit-border-bottom-left-radius;o;	;o;;i6;	i;;o;;i/;	i;;@;@	;[ ;	i;;o;	;o;;i-;	i;;o;;i;	i;;@;@	;
+@
+;o;	;@P;@U;@;@	;;o:Sass::Tree::PropNode;o;	;
+"radius;"radius;@
+;i=;@;o;	;o;;i-;i=;o;;i&;i=;@;@
+:
+@tabsi ;["border-bottom-right-radius:@value_source_rangeo;	;o;;i-;i=;o;;i&;i=;@;@
+:@children[ ;i=:@name_source_rangeo;	;o;;i$;i=;o;;i
+;i=;@;@
+;@;o;	;@';@,;@;@
+:@prop_syntax:newo;";o;	;
+"radius;"radius;@
+;i>;@;o;	;o;;i,;i>;o;;i%;i>;@;@
+;#i ;["border-bottom-left-radius;$o;	;o;;i,;i>;o;;i%;i>;@;@
+;%[ ;i>;&o;	;o;;i#;i>;o;;i
+;i>;@;@
+;@;o;	;@8;@=;@;@
+;';([u;! [o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei-:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	i-:@start_poso;;i;	i-:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[	o:Sass::Tree::PropNode:@valueo; ;"radius;"radius;@	;	i.;
+@
+;o;	;o;;i0;	i.;o;;i);	i.;@;@	:
+@tabsi ;[" -moz-border-radius-topright:@value_source_rangeo;	;o;;i0;	i.;o;;i);	i.;@;@	:@children[ ;	i.:@name_source_rangeo;	;o;;i';	i.;o;;i;	i.;@;@	;
+@
+;o;	;@;@";@;@	:@prop_syntax:newo;;o; ;"radius;"radius;@	;	i/;
+@
+;o;	;o;;i/;	i/;o;;i(;	i/;@;@	;i ;["-moz-border-radius-topleft;o;	;o;;i/;	i/;o;;i(;	i/;@;@	;[ ;	i/;o;	;o;;i&;	i/;o;;i;	i/;@;@	;
+@
+;o;	;@.;@3;@;@	;;o;;o; ;"radius;"radius;@	;	i0;
+@
+;o;	;o;;i4;	i0;o;;i-;	i0;@;@	;i ;["$-webkit-border-top-right-radius;o;	;o;;i4;	i0;o;;i-;	i0;@;@	;[ ;	i0;o;	;o;;i+;	i0;o;;i;	i0;@;@	;
+@
+;o;	;@?;@D;@;@	;;o;;o; ;"radius;"radius;@	;	i1;
+@
+;o;	;o;;i3;	i1;o;;i,;	i1;@;@	;i ;["#-webkit-border-top-left-radius;o;	;o;;i3;	i1;o;;i,;	i1;@;@	;[ ;	i1;o;	;o;;i*;	i1;o;;i;	i1;@;@	;
+@
+;o;	;@P;@U;@;@	;;o:Sass::Tree::PropNode;o;	;
+"radius;"radius;@
+;i3;@;o;	;o;;i*;i3;o;;i#;i3;@;@
+:
+@tabsi ;["border-top-right-radius:@value_source_rangeo;	;o;;i*;i3;o;;i#;i3;@;@
+:@children[ ;i3:@name_source_rangeo;	;o;;i!;i3;o;;i
+;i3;@;@
+;@;o;	;@(;@-;@;@
+:@prop_syntax:newo;";o;	;
+"radius;"radius;@
+;i4;@;o;	;o;;i);i4;o;;i";i4;@;@
+;#i ;["border-top-left-radius;$o;	;o;;i);i4;o;;i";i4;@;@
+;%[ ;i4;&o;	;o;;i ;i4;o;;i
+;i4;@;@
+;@;o;	;@9;@>;@;@
+;';([u;![o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei#:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	i#:@start_poso;;i;	i#:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[	o:Sass::Tree::PropNode:@valueo; ;"radius;"radius;@	;	i$;
+@
+;o;	;o;;i0;	i$;o;;i);	i$;@;@	:
+@tabsi ;[" -moz-border-radius-topright:@value_source_rangeo;	;o;;i0;	i$;o;;i);	i$;@;@	:@children[ ;	i$:@name_source_rangeo;	;o;;i';	i$;o;;i;	i$;@;@	;
+@
+;o;	;@;@";@;@	:@prop_syntax:newo;;o; ;"radius;"radius;@	;	i%;
+@
+;o;	;o;;i3;	i%;o;;i,;	i%;@;@	;i ;["#-moz-border-radius-bottomright;o;	;o;;i3;	i%;o;;i,;	i%;@;@	;[ ;	i%;o;	;o;;i*;	i%;o;;i;	i%;@;@	;
+@
+;o;	;@.;@3;@;@	;;o;;o; ;"radius;"radius;@	;	i&;
+@
+;o;	;o;;i4;	i&;o;;i-;	i&;@;@	;i ;["$-webkit-border-top-right-radius;o;	;o;;i4;	i&;o;;i-;	i&;@;@	;[ ;	i&;o;	;o;;i+;	i&;o;;i;	i&;@;@	;
+@
+;o;	;@?;@D;@;@	;;o;;o; ;"radius;"radius;@	;	i';
+@
+;o;	;o;;i7;	i';o;;i0;	i';@;@	;i ;["'-webkit-border-bottom-right-radius;o;	;o;;i7;	i';o;;i0;	i';@;@	;[ ;	i';o;	;o;;i.;	i';o;;i;	i';@;@	;
+@
+;o;	;@P;@U;@;@	;;o:Sass::Tree::PropNode;o;	;
+"radius;"radius;@
+;i);@;o;	;o;;i*;i);o;;i#;i);@;@
+:
+@tabsi ;["border-top-right-radius:@value_source_rangeo;	;o;;i*;i);o;;i#;i);@;@
+:@children[ ;i):@name_source_rangeo;	;o;;i!;i);o;;i
+;i);@;@
+;@;o;	;@(;@-;@;@
+:@prop_syntax:newo;";o;	;
+"radius;"radius;@
+;i*;@;o;	;o;;i-;i*;o;;i&;i*;@;@
+;#i ;["border-bottom-right-radius;$o;	;o;;i-;i*;o;;i&;i*;@;@
+;%[ ;i*;&o;	;o;;i$;i*;o;;i
+;i*;@;@
+;@;o;	;@9;@>;@;@
+;';([u;![o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	i:@start_poso;;i;	i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[	o:Sass::Tree::PropNode:@valueo; ;"radius;"radius;@	;	i;
+@
+;o;	;o;;i2;	i;o;;i+;	i;@;@	:
+@tabsi ;[""-moz-border-radius-bottomleft:@value_source_rangeo;	;o;;i2;	i;o;;i+;	i;@;@	:@children[ ;	i:@name_source_rangeo;	;o;;i);	i;o;;i;	i;@;@	;
+@
+;o;	;@;@";@;@	:@prop_syntax:newo;;o; ;"radius;"radius;@	;	i;
+@
+;o;	;o;;i/;	i;o;;i(;	i;@;@	;i ;["-moz-border-radius-topleft;o;	;o;;i/;	i;o;;i(;	i;@;@	;[ ;	i;o;	;o;;i&;	i;o;;i;	i;@;@	;
+@
+;o;	;@.;@3;@;@	;;o;;o; ;"radius;"radius;@	;	i;
+@
+;o;	;o;;i6;	i;o;;i/;	i;@;@	;i ;["&-webkit-border-bottom-left-radius;o;	;o;;i6;	i;o;;i/;	i;@;@	;[ ;	i;o;	;o;;i-;	i;o;;i;	i;@;@	;
+@
+;o;	;@?;@D;@;@	;;o;;o; ;"radius;"radius;@	;	i;
+@
+;o;	;o;;i3;	i;o;;i,;	i;@;@	;i ;["#-webkit-border-top-left-radius;o;	;o;;i3;	i;o;;i,;	i;@;@	;[ ;	i;o;	;o;;i*;	i;o;;i;	i;@;@	;
+@
+;o;	;@P;@U;@;@	;;o:Sass::Tree::PropNode;o;	;
+"radius;"radius;@
+;i;@;o;	;o;;i,;i;o;;i%;i;@;@
+:
+@tabsi ;["border-bottom-left-radius:@value_source_rangeo;	;o;;i,;i;o;;i%;i;@;@
+:@children[ ;i:@name_source_rangeo;	;o;;i#;i;o;;i
+;i;@;@
+;@;o;	;@(;@-;@;@
+:@prop_syntax:newo;";o;	;
+"radius;"radius;@
+;i ;@;o;	;o;;i);i ;o;;i";i ;@;@
+;#i ;["border-top-left-radius;$o;	;o;;i);i ;o;;i";i ;@;@
+;%[ ;i ;&o;	;o;;i ;i ;o;;i
+;i ;@;@
+;@;o;	;@9;@>;@;@
+;';(;'0;i;@;o;	;o;;i;i@;o;;i;i;@;@o;	
+;
+["E/* We can control whether or not we have inset shadows edges. */;;;[ ;iB;@o;!;T;"[[o;#	;$"active;"active;@;o;	;o;;i!;iC;i;@;@o;	;
+T;iC;@;o;	;o;;i&;iC;o;;i";iC;@;@;"inset-shadow;[u;&Y[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@lineiD:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	iD:@start_poso;;i;	iD:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::PropNode:@valueo:Sass::Script::List;[o; ;"shiny_edge_size;"shiny-edge-size;@	;	iE;
+@
+;o;	;o;;i.;	iE;o;;i.;	iE;@;@	o; ;"shiny_edge_color;"shiny-edge-color;@	;	iE;
+@
+;o;	;o;;i@;	iE;o;;i@;	iE;@;@	o:Sass::Script::String;"
+inset:
+@type:identifier;@	;	iE;
+@
+;o;	;o;;iF;	iE;o;;iA;	iE;@;@	;@	:@separator:
+space;	iE;o;	;o;;iF;	iE;o;;i;	iE;@;@	;
+@
+:
+@tabsi ;["-webkit-box-shadow:@value_source_rangeo;	;o;;iF;	iE;o;;i;	iE;@;@	:@children[ ;	iE:@name_source_rangeo;	;o;;i;	iE;o;;i
+;	iE;@;@	;
+@
+;o;	;@-;@2;@;@	:@prop_syntax:newo:Sass::Tree::PropNode;
+o:Sass::Script::List;
+[o;#;$"shiny_edge_size;"shiny-edge-size;%@;iG;@;o;	;o;;i$;iG;o;;i$;iG;@;@o;#;$"shiny_edge_color;"shiny-edge-color;%@;iG;@;o;	;o;;i6;iG;o;;i6;iG;@;@o:Sass::Script::String;
+"
+inset;:identifier;%@;iG;@;o;	;o;;i<;iG;o;;i7;iG;@;@;%@:@separator:
+space;iG;o;	;o;;i<;iG;o;;i;iG;@;@;@:
+@tabsi ;["box-shadow:@value_source_rangeo;	;o;;i<;iG;o;;i;iG;@;@;[ ;iG:@name_source_rangeo;	;o;;i;iG;o;;i;iG;@;@;@;o;	;@{;@Ä;@;@:@prop_syntax:newu;&ø
+[o:Sass::Script::Variable:@underscored_name"active:
+@name"active:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@lineiI:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	iI:@start_poso;;i;	iI:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::RuleNode:@has_childrenT:
+@tabsi :@children[u:Sass::Tree::IfNodeg[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@lineiJ:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	iJ:@start_poso;;i;	iJ:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::PropNode:@valueo:Sass::Script::List;[o; ;"shiny_edge_size;"shiny-edge-size;@	;	iK;
+@
+;o;	;o;;i0;	iK;o;;i0;	iK;@;@	o; ;"shiny_edge_active_color;"shiny-edge-active-color;@	;	iK;
+@
+;o;	;o;;iI;	iK;o;;iI;	iK;@;@	o:Sass::Script::String;"
+inset:
+@type:identifier;@	;	iK;
+@
+;o;	;o;;iO;	iK;o;;iJ;	iK;@;@	;@	:@separator:
+space;	iK;o;	;o;;iO;	iK;o;;i ;	iK;@;@	;
+@
+:
+@tabsi ;["-webkit-box-shadow:@value_source_rangeo;	;o;;iO;	iK;o;;i ;	iK;@;@	:@children[ ;	iK:@name_source_rangeo;	;o;;i;	iK;o;;i;	iK;@;@	;
+@
+;o;	;@-;@2;@;@	:@prop_syntax:newo:Sass::Tree::PropNode:@valueo:Sass::Script::List;[o; ;"shiny_edge_size;"shiny-edge-size;@	;	iM;
+@
+;o;	;o;;i&;	iM;o;;i&;	iM;@;@	o; ;"shiny_edge_active_color;"shiny-edge-active-color;@	;	iM;
+@
+;o;	;o;;i?;	iM;o;;i?;	iM;@;@	o:Sass::Script::String;"
+inset:
+@type:identifier;@	;	iM;
+@
+;o;	;o;;iE;	iM;o;;i@;	iM;@;@	;@	:@separator:
+space;	iM;o;	;o;;iE;	iM;o;;i;	iM;@;@	;
+@
+;i ;["box-shadow:@value_source_rangeo;	;o;;iE;	iM;o;;i;	iM;@;@	;[ ;	iM:@name_source_rangeo;	;o;;i;	iM;o;;i
+;	iM;@;@	;
+@
+;o;	;@0;@5;@;@	:@prop_syntax:new:@selector_source_rangeo;	;o;;i;	iI;o;;i;	iI;@;@	;	iI:@parsed_ruleso:"Sass::Selector::CommaSequence:@members[o:Sass::Selector::Sequence;,[o:#Sass::Selector::SimpleSequence;,[o:Sass::Selector::Parent;" ;	iIo:Sass::Selector::Pseudo
+;!:
+class:	@arg0;["active;@A;	iI;@A;	iI:@sourceso;;{ :@subject0;o;	;o;;i;	i;o;;i;	i;0;@A;@A;	iI:
+@rule["&:active;
+@
+;o;	;o;;iH;	iM;o;;i;	iI;@;@	;'0;iC;@;o;	;o;;i;iN;o;;i;iC;@;@o;	
+;
+["5/* We use this to add transitions to elements */;;;[ ;iP;@o;!;T;"[[o;#	;$"property;"property;@;o;	;o;;i(;iQ;i;@;@o;*;
+"all;;+;%@;iQ;@;o;	;o;;i,;iQ;o;;i);iQ;@;@[o;#	;$"
+speed;"
+speed;@;o;	;o;;i4;iQ;i.;@;@o:Sass::Script::Number;
+i,:@numerator_units["ms:@original"
+300ms;iQ;@;o;	;o;;i:;iQ;o;;i5;iQ;@;@:@denominator_units[ [o;#	;$"	ease;"	ease;@;o;	;o;;iA;iQ;i<;@;@o;*;
+"ease-out;;+;%@;iQ;@;o;	;o;;iJ;iQ;o;;iB;iQ;@;@;"single-transition;[u;&ÿ[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@lineiR:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	iR:@start_poso;;i;	iR:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::PropNode:@valueo:Sass::Script::List;[o; ;"property;"property;@	;	iS;
+@
+;o;	;o;;i';	iS;o;;i';	iS;@;@	o; ;"
+speed;"
+speed;@	;	iS;
+@
+;o;	;o;;i.;	iS;o;;i.;	iS;@;@	o; ;"	ease;"	ease;@	;	iS;
+@
+;o;	;o;;i4;	iS;o;;i4;	iS;@;@	;@	:@separator:
+space;	iS;o;	;o;;i4;	iS;o;;i;	iS;@;@	;
+@
+:
+@tabsi ;["-webkit-transition:@value_source_rangeo;	;o;;i4;	iS;o;;i;	iS;@;@	:@children[ ;	iS:@name_source_rangeo;	;o;;i;	iS;o;;i
+;	iS;@;@	;
+@
+;o;	;@.;@3;@;@	:@prop_syntax:newo;;o;;[o; ;"property;"property;@	;	iT;
+@
+;o;	;o;;i$;	iT;o;;i$;	iT;@;@	o; ;"
+speed;"
+speed;@	;	iT;
+@
+;o;	;o;;i+;	iT;o;;i+;	iT;@;@	o; ;"	ease;"	ease;@	;	iT;
+@
+;o;	;o;;i1;	iT;o;;i1;	iT;@;@	;@	;;;	iT;o;	;o;;i1;	iT;o;;i;	iT;@;@	;
+@
+;i ;["-moz-transition;o;	;o;;i1;	iT;o;;i;	iT;@;@	;[ ;	iT; o;	;o;;i;	iT;o;;i
+;	iT;@;@	;
+@
+;o;	;@P;@U;@;@	;!;"o;(;
+o;);
+[o;#;$"property;"property;%@;iV;@;o;	;o;;i;iV;o;;i;iV;@;@o;#;$"
+speed;"
+speed;%@;iV;@;o;	;o;;i$;iV;o;;i$;iV;@;@o;#;$"	ease;"	ease;%@;iV;@;o;	;o;;i*;iV;o;;i*;iV;@;@;%@;,;-;iV;o;	;o;;i*;iV;o;;i;iV;@;@;@;.i ;["transition;/o;	;o;;i*;iV;o;;i;iV;@;@;[ ;iV;0o;	;o;;i;iV;o;;i;iV;@;@;@;o;	;@Œ;@”;@;@;1;2;'0;iQ;@;o;	;o;;i;iW;o;;i;iQ;@;@o;	
+;
+["@/* We use this to add box-sizing across browser prefixes */;;;[ ;iY;@o;!;T;"[[o;#	;$"	type;"	type;@;o;	;o;;i;iZ;i;@;@o;*;
+"border-box;;+;%@;iZ;@;o;	;o;;i(;iZ;o;;i;iZ;@;@;"box-sizing;[u;&˜[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei[:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	i[:@start_poso;;i;	i[:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::PropNode:@valueo; ;"	type;"	type;@	;	i\;
+@
+;o;	;o;;i ;	i\;o;;i;	i\;@;@	:
+@tabsi ;["-moz-box-sizing:@value_source_rangeo;	;o;;i ;	i\;o;;i;	i\;@;@	:@children[ ;	i\:@name_source_rangeo;	;o;;i;	i\;o;;i
+;	i\;@;@	;
+@
+;o;	;@;@";@;@	:@prop_syntax:newo;;o; ;"	type;"	type;@	;	i];
+@
+;o;	;o;;i#;	i];o;;i;	i];@;@	;i ;["-webkit-box-sizing;o;	;o;;i#;	i];o;;i;	i];@;@	;[ ;	i];o;	;o;;i;	i];o;;i
+;	i];@;@	;
+@
+;o;	;@.;@3;@;@	;;o;(;
+o;#;$"	type;"	type;%@;i_;@;o;	;o;;i;i_;o;;i;i_;@;@;.i ;["box-sizing;/o;	;o;;i;i_;o;;i;i_;@;@;[ ;i_;0o;	;o;;i;i_;o;;i;i_;@;@;@;o;	;@ˆ;@˚;@;@;1;2;'0;iZ;@;o;	;o;;i;i`;o;;i;iZ;@;@o;	
+;
+["6/* We use this to create equilateral triangles */;;;[ ;ib;@o;!;T;"[[o;#	;$"triangle_size;"triangle-size;@;o;	;o;;i(;ic;i;@;@0[o;#	;$"triangle_color;"triangle-color;@;o;	;o;;i9;ic;i*;@;@0[o;#	;$"triangle_direction;"triangle-direction;@;o;	;o;;iN;ic;i;;@;@0;"css-triangle;[o;(;
+o;*;
+""";;+;@;.i ;["content;/o;	;o;;i;id;o;;i;id;@;@;[ ;id;0o;	;o;;i;id;o;;i;id;@;@;@;o;	;@ ;@%;@;@;1;2o;(;
+o;*;
+"
+block;;+;@;.i ;["display;/o;	;o;;i;ie;o;;i;ie;@;@;[ ;ie;0o;	;o;;i;ie;o;;i;ie;@;@;@;o;	;@-;@2;@;@;1;2o;(;
+o;*;
+"0;;+;@;.i ;["
+width;/o;	;o;;i;if;o;;i;if;@;@;[ ;if;0o;	;o;;i;if;o;;i;if;@;@;@;o;	;@:;@?;@;@;1;2o;(;
+o;*;
+"0;;+;@;.i ;["height;/o;	;o;;i;ig;o;;i;ig;@;@;[ ;ig;0o;	;o;;i;ig;o;;i;ig;@;@;@;o;	;@G;@L;@;@;1;2o;(;
+o;);
+[o;*;
+"
+inset;;+;%@;ih;@;o;	;o;;i;ih;o;;i;ih;@;@o;#;$"triangle_size;"triangle-size;%@;ih;@;o;	;o;;i$;ih;o;;i$;ih;@;@;%@;,;-;ih;o;	;o;;i$;ih;o;;i;ih;@;@;@;.i ;["border;/o;	;o;;i$;ih;o;;i;ih;@;@;[ ;ih;0o;	;o;;i;ih;o;;i;ih;@;@;@;o;	;@b;@g;@;@;1;2u;&[o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"triangle_direction:
+@name"triangle-direction:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@lineii:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti ;ii:@start_poso;;i ;ii:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;ii;@;o;	;o;;i);ii;o;;i;ii;@;@
+:@operand2o:Sass::Script::String:@value"top:
+@type:identifier;@
+;ii;@;o;	;o;;i';ii;o;;i$;ii;@;@
+0[o:Sass::Tree::PropNode;o:Sass::Script::List;[	o;	;
+"triangle_color;"triangle-color;@
+;ij;@;o;	;o;;i';ij;o;;i';ij;@;@
+o;;"transparent;; ;@
+;ij;@;o;	;o;;i3;ij;o;;i(;ij;@;@
+o;;"transparent;; ;@
+;ij;@;o;	;o;;i?;ij;o;;i4;ij;@;@
+o;;"transparent;; ;@
+;ij;@;o;	;o;;iK;ij;o;;i@;ij;@;@
+;@
+:@separator:
+space;ij;o;	;o;;iK;ij;o;;i;ij;@;@
+;@:
+@tabsi ;["border-color:@value_source_rangeo;	;o;;iK;ij;o;;i;ij;@;@
+:@children[ ;ij:@name_source_rangeo;	;o;;i;ij;o;;i
+;ij;@;@
+;@;o;	;@:;@?;@;@
+:@prop_syntax:newo;!;o;;"
+solid;; ;@;%i ;["border-top-style;&o;	;o;;i!;ik;o;;i;ik;@;@
+;'[ ;ik;(o;	;o;;i;ik;o;;i
+;ik;@;@
+;@;o;	;@G;@L;@;@
+;);*u;&[o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"triangle_direction:
+@name"triangle-direction:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@lineim:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti ;im:@start_poso;;i ;im:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;im;@;o;	;o;;i,;im;o;;i;im;@;@
+:@operand2o:Sass::Script::String:@value"bottom:
+@type:identifier;@
+;im;@;o;	;o;;i*;im;o;;i$;im;@;@
+0[o:Sass::Tree::PropNode;o:Sass::Script::List;[	o;;"transparent;; ;@
+;in;@;o;	;o;;i#;in;o;;i;in;@;@
+o;;"transparent;; ;@
+;in;@;o;	;o;;i/;in;o;;i$;in;@;@
+o;	;
+"triangle_color;"triangle-color;@
+;in;@;o;	;o;;i?;in;o;;i?;in;@;@
+o;;"transparent;; ;@
+;in;@;o;	;o;;iK;in;o;;i@;in;@;@
+;@
+:@separator:
+space;in;o;	;o;;iK;in;o;;i;in;@;@
+;@:
+@tabsi ;["border-color:@value_source_rangeo;	;o;;iK;in;o;;i;in;@;@
+:@children[ ;in:@name_source_rangeo;	;o;;i;in;o;;i
+;in;@;@
+;@;o;	;@:;@?;@;@
+:@prop_syntax:newo;!;o;;"
+solid;; ;@;%i ;["border-bottom-style;&o;	;o;;i$;io;o;;i;io;@;@
+;'[ ;io;(o;	;o;;i;io;o;;i
+;io;@;@
+;@;o;	;@G;@L;@;@
+;);*u;&[o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"triangle_direction:
+@name"triangle-direction:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@lineiq:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti ;iq:@start_poso;;i ;iq:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;iq;@;o;	;o;;i*;iq;o;;i;iq;@;@
+:@operand2o:Sass::Script::String:@value"	left:
+@type:identifier;@
+;iq;@;o;	;o;;i(;iq;o;;i$;iq;@;@
+0[o:Sass::Tree::PropNode;o:Sass::Script::List;[	o;;"transparent;; ;@
+;ir;@;o;	;o;;i#;ir;o;;i;ir;@;@
+o;;"transparent;; ;@
+;ir;@;o;	;o;;i/;ir;o;;i$;ir;@;@
+o;;"transparent;; ;@
+;ir;@;o;	;o;;i;;ir;o;;i0;ir;@;@
+o;	;
+"triangle_color;"triangle-color;@
+;ir;@;o;	;o;;iK;ir;o;;iK;ir;@;@
+;@
+:@separator:
+space;ir;o;	;o;;iK;ir;o;;i;ir;@;@
+;@:
+@tabsi ;["border-color:@value_source_rangeo;	;o;;iK;ir;o;;i;ir;@;@
+:@children[ ;ir:@name_source_rangeo;	;o;;i;ir;o;;i
+;ir;@;@
+;@;o;	;@:;@?;@;@
+:@prop_syntax:newo;!;o;;"
+solid;; ;@;%i ;["border-left-style;&o;	;o;;i";is;o;;i;is;@;@
+;'[ ;is;(o;	;o;;i;is;o;;i
+;is;@;@
+;@;o;	;@G;@L;@;@
+;);*u;&[o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"triangle_direction:
+@name"triangle-direction:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@lineiu:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti ;iu:@start_poso;;i ;iu:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;iu;@;o;	;o;;i+;iu;o;;i;iu;@;@
+:@operand2o:Sass::Script::String:@value"
+right:
+@type:identifier;@
+;iu;@;o;	;o;;i);iu;o;;i$;iu;@;@
+0[o:Sass::Tree::PropNode;o:Sass::Script::List;[	o;;"transparent;; ;@
+;iv;@;o;	;o;;i#;iv;o;;i;iv;@;@
+o;	;
+"triangle_color;"triangle-color;@
+;iv;@;o;	;o;;i3;iv;o;;i3;iv;@;@
+o;;"transparent;; ;@
+;iv;@;o;	;o;;i?;iv;o;;i4;iv;@;@
+o;;"transparent;; ;@
+;iv;@;o;	;o;;iK;iv;o;;i@;iv;@;@
+;@
+:@separator:
+space;iv;o;	;o;;iK;iv;o;;i;iv;@;@
+;@:
+@tabsi ;["border-color:@value_source_rangeo;	;o;;iK;iv;o;;i;iv;@;@
+:@children[ ;iv:@name_source_rangeo;	;o;;i;iv;o;;i
+;iv;@;@
+;@;o;	;@:;@?;@;@
+:@prop_syntax:newo;!;o;;"
+solid;; ;@;%i ;["border-right-style;&o;	;o;;i#;iw;o;;i;iw;@;@
+;'[ ;iw;(o;	;o;;i;iw;o;;i
+;iw;@;@
+;@;o;	;@G;@L;@;@
+;);*;'0;ic;@;o;	;o;;i;iy;o;;i;ic;@;@o;	
+;
+[")/* We use this to do clear floats */;;;[ ;i{;@o;!;T;"[ ;"clearfix;[o;(;
+o;*;
+"1;;+;@;.i ;["
+*zoom;/o;	;o;;i;i};o;;i;i};@;@;[ ;i};0o;	;o;;i;i};o;;i;i};@;@;@;o;	;@~;@É;@;@;1;2o:Sass::Tree::RuleNode;T;.i ;[o;(;
+o;*;
+"" ";;+;@;.i ;["content;/o;	;o;;i(;i~;o;;i%;i~;@;@;[ ;i~;0o;	;o;;i#;i~;o;;i;i~;@;@;@;o;	;@ç;@í;@;@;1;2o;(;
+o;*;
+"
+table;;+;@;.i ;["display;/o;	;o;;i8;i~;o;;i3;i~;@;@;[ ;i~;0o;	;o;;i1;i~;o;;i*;i~;@;@;@;o;	;@ö;@ü;@;@;1;2:@selector_source_rangeo;	;o;;i;i~;o;;i;i~;@;@;i~:@parsed_ruleso:"Sass::Selector::CommaSequence:@members[o:Sass::Selector::Sequence;;[o:#Sass::Selector::SimpleSequence;;[o:Sass::Selector::Parent;%" ;i~o:Sass::Selector::Pseudo
+;:
+class:	@arg0;["before;%@´;i~;%@´;i~:@sourceso;;{ :@subject0;o;	;o;;i;i;o;;i;i;0;@´o;<;;[o;=;;[o;>;%@´;i~o;?
+;;@;A0;["
+after;%@´;i~;%@´;i~;Bo;;{ ;C0;o;	;o;;i;i;o;;i;i;0;@´;%@´;i~:
+@rule["&:before, &:after;@;o;	;o;;i;;i~;o;;i;i~;@;@o;7;T;.i ;[o;(;
+o;*;
+"	both;;+;@;.i ;["
+clear;/o;	;o;;i;i;o;;i;i;@;@;[ ;i;0o;	;o;;i;i;o;;i;i;@;@;@;o;	;@Œ;@”;@;@;1;2;8o;	;o;;i;i;o;;i;i;@;@;i;9o;:;;[o;<;;[o;=;;[o;>;%" ;io;?
+;;@;A0;["
+after;%@ﬂ;i;%@ﬂ;i;Bo;;{ ;C0;o;	;o;;i;i;o;;i;i;0;@ﬂ;%@ﬂ;i;D["&:after;@;o;	;o;;i ;i;o;;i;i;@;@;'0;i|;@;o;	;o;;i;i{;o;;i;i|;@;@o;	
+;
+["@/* We use this to add a glowing effect to block elements */;;;[ ;i~;@o;!;T;"[[o;#	;$"selector;"selector;@;o;	;o;;i+;i;i";@;@o;*;
+"
+focus;;+;%@;i;@;o;	;o;;i1;i;o;;i,;i;@;@[o;#	;$"fade_time;"fade-time;@;o;	;o;;i=;i;i3;@;@o;3;
+i,;4["ms;5"
+300ms;i;@;o;	;o;;iC;i;o;;i>;i;@;@;6[ [o;#	;$"glowing_effect_color;"glowing-effect-color;@;o;	;o;;iZ;i;iE;@;@o:Sass::Script::Funcall:@keywords{ ;"[o;#;$"primary_color;"primary-color;%@;i;@;o;	;o;;ir;i;o;;ir;i;@;@o;3;
+f	0.25;4[ ;5"	0.25;i;@;o;	;o;;iw;i;o;;it;i;@;@;6[ ;"fade-out;%@;'0;i;@;o;	;o;;ix;i;o;;i[;i;@;@;"block-glowing-effect;[u;&[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@lineiÄ:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	iÄ:@start_poso;;i;	iÄ:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::PropNode:@valueo:Sass::Script::List;[o;
+;[o:Sass::Script::String;"-webkit-box-shadow:
+@type:identifier;@	;	iÅ;
+@
+;o;	;o;;i0;	iÅ;o;;i;	iÅ;@;@	o; ;"fade_time;"fade-time;@	;	iÅ;
+@
+;o;	;o;;i;;	iÅ;o;;i;;	iÅ;@;@	;@	:@separator:
+space;	iÅ;
+@
+o;
+;[o;;"border-color;;;@	;	iÅ;
+@
+;o;	;o;;iI;	iÅ;o;;i=;	iÅ;@;@	o; ;"fade_time;"fade-time;@	;	iÅ;
+@
+;o;	;o;;iT;	iÅ;o;;iT;	iÅ;@;@	o;;"ease-in-out;;;@	;	iÅ;
+@
+;o;	;o;;i`;	iÅ;o;;iU;	iÅ;@;@	;@	;;;	iÅ;
+@
+;@	;:
+comma;	iÅ;o;	;o;;i`;	iÅ;o;;i;	iÅ;@;@	;
+@
+:
+@tabsi ;["-webkit-transition:@value_source_rangeo;	;o;;i`;	iÅ;o;;i;	iÅ;@;@	:@children[ ;	iÅ:@name_source_rangeo;	;o;;i;	iÅ;o;;i
+;	iÅ;@;@	;
+@
+;o;	;@;;@@;@;@	:@prop_syntax:newo;;o;;[o;
+;[o;;"-moz-box-shadow;;;@	;	iÇ;
+@
+;o;	;o;;i*;	iÇ;o;;i;	iÇ;@;@	o; ;"fade_time;"fade-time;@	;	iÇ;
+@
+;o;	;o;;i5;	iÇ;o;;i5;	iÇ;@;@	;@	;;;	iÇ;
+@
+o;
+;[o;;"border-color;;;@	;	iÇ;
+@
+;o;	;o;;iC;	iÇ;o;;i7;	iÇ;@;@	o; ;"fade_time;"fade-time;@	;	iÇ;
+@
+;o;	;o;;iN;	iÇ;o;;iN;	iÇ;@;@	o;;"ease-in-out;;;@	;	iÇ;
+@
+;o;	;o;;iZ;	iÇ;o;;iO;	iÇ;@;@	;@	;;;	iÇ;
+@
+;@	;; ;	iÇ;o;	;o;;iZ;	iÇ;o;;i;	iÇ;@;@	;
+@
+;!i ;["-moz-transition;"o;	;o;;iZ;	iÇ;o;;i;	iÇ;@;@	;#[ ;	iÇ;$o;	;o;;i;	iÇ;o;;i
+;	iÇ;@;@	;
+@
+;o;	;@j;@o;@;@	;%;&o;(;
+o;);
+[o;)
+;
+[o;*;
+"box-shadow;;+;%@;iÑ;@;o;	;o;;i;iÑ;o;;i;iÑ;@;@o;#;$"fade_time;"fade-time;%@;iÑ;@;o;	;o;;i);iÑ;o;;i);iÑ;@;@;%@;,;-;iÑ;@o;)
+;
+[o;*;
+"border-color;;+;%@;iÑ;@;o;	;o;;i7;iÑ;o;;i+;iÑ;@;@o;#;$"fade_time;"fade-time;%@;iÑ;@;o;	;o;;iB;iÑ;o;;iB;iÑ;@;@o;*;
+"ease-in-out;;+;%@;iÑ;@;o;	;o;;iN;iÑ;o;;iC;iÑ;@;@;%@;,;-;iÑ;@;%@;,:
+comma;iÑ;o;	;o;;iN;iÑ;o;;i;iÑ;@;@;@;.i ;["transition;/o;	;o;;iN;iÑ;o;;i;iÑ;@;@;[ ;iÑ;0o;	;o;;i;iÑ;o;;i;iÑ;@;@;@;o;	;@U;@Z;@;@;1;2o;7;T;.i ;[u;&¸[o:Sass::Script::Variable:@underscored_name"experimental:
+@name"experimental:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@lineiá:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;	iá:@start_poso;;i;	iá:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[o:Sass::Tree::PropNode:@valueo:Sass::Script::List;[	o:Sass::Script::Number;i :@numerator_units[ :@original"0;	ià;
+@
+;o;	;o;;i!;	ià;o;;i ;	ià;@;@	:@denominator_units[ o;;i ;[ ;"0;	ià;
+@
+;o;	;o;;i#;	ià;o;;i";	ià;@;@	;@o;;i
+;["px;"5px;	ià;
+@
+;o;	;o;;i';	ià;o;;i$;	ià;@;@	;[ o; ;"glowing_effect_color;"glowing-effect-color;@	;	ià;
+@
+;o;	;o;;i=;	ià;o;;i=;	ià;@;@	;@	:@separator:
+space;	ià;o;	;o;;i=;	ià;o;;i ;	ià;@;@	;
+@
+:
+@tabsi ;["-webkit-box-shadow:@value_source_rangeo;	;o;;i=;	ià;o;;i ;	ià;@;@	:@children[ ;	ià:@name_source_rangeo;	;o;;i;	ià;o;;i;	ià;@;@	;
+@
+;o;	;@7;@<;@;@	:@prop_syntax:newo;;o;;[	o;;i ;[ ;"0;	iâ;
+@
+;o;	;o;;i;	iâ;o;;i;	iâ;@;@	;@o;;i ;[ ;"0;	iâ;
+@
+;o;	;o;;i ;	iâ;o;;i;	iâ;@;@	;@o;;i
+;["px;"5px;	iâ;
+@
+;o;	;o;;i$;	iâ;o;;i!;	iâ;@;@	;[ o; ;"glowing_effect_color;"glowing-effect-color;@	;	iâ;
+@
+;o;	;o;;i:;	iâ;o;;i:;	iâ;@;@	;@	;; ;	iâ;o;	;o;;i:;	iâ;o;;i;	iâ;@;@	;
+@
+;!i ;["-moz-box-shadow;"o;	;o;;i:;	iâ;o;;i;	iâ;@;@	;#[ ;	iâ;$o;	;o;;i;	iâ;o;;i;	iâ;@;@	;
+@
+;o;	;@a;@f;@;@	;%;&o;(;
+o;);
+[	o;3;
+i ;4[ ;5"0;iã;@;o;	;o;;i;iã;o;;i;iã;@;@;6@%o;3;
+i ;4[ ;5"0;iã;@;o;	;o;;i;iã;o;;i;iã;@;@;6@%o;3;
+i
+;4["px;5"5px;iã;@;o;	;o;;i;iã;o;;i;iã;@;@;6[ o;#;$"glowing_effect_color;"glowing-effect-color;%@;iã;@;o;	;o;;i3;iã;o;;i3;iã;@;@;%@;,;-;iã;o;	;o;;i3;iã;o;;i;iã;@;@;@;.i ;["box-shadow;/o;	;o;;i3;iã;o;;i;iã;@;@;[ ;iã;0o;	;o;;i;iã;o;;i
+;iã;@;@;@;o;	;@Ç;@á;@;@;1;2o;(;
+o;#;$"glowing_effect_color;"glowing-effect-color;%@;iå;@;o;	;o;;i-;iå;o;;i;iå;@;@;.i ;["border-color;/o;	;o;;i-;iå;o;;i;iå;@;@;[ ;iå;0o;	;o;;i;iå;o;;i
+;iå;@;@;@;o;	;@ì;@ò;@;@;1;2;8o;	;o;;i;iÜ;o;;i;iÜ;@;@;iÜ;D["&:o;#;$"selector;"selector;%@;iÜ;@;o;	;o;;i;iÜ;o;;i;iÜ;@;@;@;o;	;o;;i	;iç;o;;i;iÜ;@;@;'0;i;@;o;	;o;;i;ié;o;;i;i;@;@o;	
+;
+["%/*
+ * Foundation Variables
+ * */;;;[ ;iê;@o;	
+;
+["õ/* The default font-size is set to 100% of the browser style sheet (usually 16px)
+ * for compatibility with brower-based text zoom or user-set defaults. */;;;[ ;iî;@o;	
+;
+["/* Since the typical default browser font-size is 16px, that makes the calculation for grid size.
+ * If you want your base font-size to be different and not have it effect the grid breakpoints,
+ * set $em-base to $base-font-size and make sure $base-font-size is a px value. */;;;[ ;ió;@o;;o;3;
+ii;4["%;5"	100%;iö;@;o;	;o;;i;iö;o;;i;iö;@;@;6[ ;"base-font-size;[ ;iö; "!default;@;o;	;o;;i$;iö;o;;i;iö;@;@o;	
+;
+["B/* $base-line-height is 24px while $base-font-size is 16px */;;;[ ;iú;@o;;o;3;
+iñ;4["%;5"	150%;iù;@;o;	;o;;i;iù;o;;i;iù;@;@;6[ ;"base-line-height;[ ;iù; "!default;@;o;	;o;;i&;iù;o;;i;iù;@;@o;	
+;
+["M/* This is the default html and body font-size for the base em value. */;;;[ ;iü;@o;;o;3;
+i;4[ ;5"16;i†;@;o;	;o;;i;i†;o;;i;i†;@;@;6@%;"em-base;[ ;i†; "!default;@;o;	;o;;i;i†;o;;i;i†;@;@o;	
+;
+["7/* It strips the unit of measure and returns it */;;;[ ;i¢;@o:Sass::Tree::FunctionNode;T;"[[o;#	;$"num;"num;@;o;	;o;;i;i£;i;@;@0;"strip-unit;[o:Sass::Tree::ReturnNode
+;o:Sass::Script::Operation:@operator:div:@operand1o;#;$"num;"num;%@;i§;@;o;	;o;;i;i§;o;;i;i§;@;@;i§;@;o;	;o;;i%;i§;o;;i;i§;@;@:@operand2o;J;K:	plus;Mo;J;K:
+times;Mo;#;$"num;"num;%@;i§;@;o;	;o;;i;i§;o;;i;i§;@;@;i§;@;o;	;o;;i ;i§;o;;i ;i§;@;@;No;3;
+i ;4[ ;5"0;i§;@;o;	;o;;i ;i§;o;;i;i§;@;@;6@%;i§;@;o;	;o;;i%;i§;o;;i$;i§;@;@;No;3;
+i;4[ ;5"1;i§;@;o;	;o;;i$;i§;o;;i#;i§;@;@;6@%;[ ;i§;@;o;	;o;;i%;i§;o;;i;i§;@;@;'0;i£;@;o;	;o;;i;i•;o;;i;i£;@;@o;	
+;
+["5/* Converts "px" to "em" using the ($)em-base */;;;[ ;iß;@o;H;T;"[[o;#	;$"
+value;"
+value;@;o;	;o;;i$;i®;i;@;@0;"convert-to-em;[	o;;o;J;K;P;Mo;J;K;L;Mo;E;F{ ;"[o;#;$"
+value;"
+value;%@;i©;@;o;	;o;;i!;i©;o;;i!;i©;@;@;"strip-unit;%@;'0;i©;@;o;	;o;;i";i©;o;;i;i©;@;@;i©;@;o;	;o;;i9;i©;o;;i0;i©;@;@;No;E;F{ ;"[o;#;$"em_base;"em-base;%@;i©;@;o;	;o;;i8;i©;o;;i8;i©;@;@;"strip-unit;%@;'0;i©;@;o;	;o;;i9;i©;o;;i%;i©;@;@;i©;@;o;	;o;;i?;i©;o;;i;i©;@;@;No;3;
+i;4["em;5"1em;i©;@;o;	;o;;i?;i©;o;;i<;i©;@;@;6[ ;"
+value;[ ;i©; 0;@;o;	;o;;i?;i©;o;;i	;i©;@;@u;&î[o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"
+value:
+@name"
+value:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei™:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;i™:@start_poso;;i;i™:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;i™;@;o;	;o;;i;i™;o;;i;i™;@;@
+:@operand2o:Sass::Script::Number:@valuei :@numerator_units["em:@original"0em;i™;@;o;	;o;;i;i™;o;;i;i™;@;@
+:@denominator_units[ 0[o:Sass::Tree::VariableNode:
+@expro;;i ;[ ; "0;i™;@;o;	;o;;i';i™;o;;i&;i™;@;@
+;![ ;"
+value:@children[ ;i™:@guarded0;@;o;	;o;;i';i™;o;;i;i™;@;@
+o;	
+;
+["/* Turn 0em into 0 */;;;[ ;i™;@o;I
+;o;#;$"
+value;"
+value;%@;i´;@;o;	;o;;i;i´;o;;i;i´;@;@;[ ;i´;@;o;	;o;;i;i´;o;;i;i´;@;@;'0;i®;@;o;	;o;;i;i¨;o;;i;i®;@;@o;	
+;
+["ã/* Working in ems is annoying. Think in pixels by using this handy function, emCalc(#)
+ * Just enter the number, no need to mention "px" */;;;[ ;iÆ;@o;H;T;"[ ;"emCalc;[o;;o;E;F{ ;"[o;#;$"values;"values;%@;i±;@;o;	;o;;i;i±;o;;i;i±;@;@;"length;%@;'0;i±;@;o;	;o;;i;i±;o;;i;i±;@;@;"max;[ ;i±; 0;@;o;	;o;;i;i±;o;;i	;i±;@;@o;	
+;
+["4/* Get the total number of parameters passed */;;;[ ;i±;@o;	
+;
+["¢/* If there is only 1 parameter, then return it as an integer.
+ * This is done because a list can't be multiplied or divided even if it contains a single value */;;;[ ;i≥;@u;&ñ[o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"max:
+@name"max:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@lineiµ:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;iµ:@start_poso;;i;iµ:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;iµ;@;o;	;o;;i;iµ;o;;i;iµ;@;@
+:@operand2o:Sass::Script::Number:@valuei:@numerator_units[ :@original"1;iµ;@;o;	;o;;i;iµ;o;;i;iµ;@;@
+:@denominator_units[ 0[o:Sass::Tree::ReturnNode
+:
+@expro:Sass::Script::Funcall:@keywords{ :
+@args[o;$;%{ ;&[o;	;
+"values;"values;@
+;iµ;@;o;	;o;;i9;iµ;o;;i9;iµ;@;@
+o;;i;[ ; "1;iµ;@;o;	;o;;i<;iµ;o;;i;;iµ;@;@
+;!@;"nth;@
+:@splat0;iµ;@;o;	;o;;i=;iµ;o;;i.;iµ;@;@
+;"convert-to-em;@
+;'0;iµ;@;o;	;o;;i>;iµ;o;;i ;iµ;@;@
+:@children[ ;iµ;@;o;	;o;;i>;iµ;o;;i;iµ;@;@
+o;;o;);
+[ ;%@;,;-;i∑;o;	;o;;i;i∑;o;;i;i∑;@;@;@;"emValues;[ ;i∑; 0;@;o;	;o;;i;i∑;o;;i	;i∑;@;@o;	
+;
+["E/* This will eventually store the converted $values in a list */;;;[ ;i∑;@o:Sass::Tree::ForNode;T:
+@fromo;3;
+i;4[ ;5"1;i∏;@;o;	;o;;i;i∏;o;;i;i∏;@;@;6@%:@too;#;$"max;"max;%@;i∏;@;o;	;o;;i$;i∏;o;;i;i∏;@;@:	@var"i;[o;;o;E;F{ ;"[o;#;$"emValues;"emValues;%@;iπ;@;o;	;o;;i%;iπ;o;;i%;iπ;@;@o;E;F{ ;"[o;E;F{ ;"[o;#;$"values;"values;%@;iπ;@;o;	;o;;i@;iπ;o;;i@;iπ;@;@o;#;$"i;"i;%@;iπ;@;o;	;o;;iD;iπ;o;;iD;iπ;@;@;"nth;%@;'0;iπ;@;o;	;o;;iE;iπ;o;;i5;iπ;@;@;"convert-to-em;%@;'0;iπ;@;o;	;o;;iF;iπ;o;;i';iπ;@;@;"append;%@;'0;iπ;@;o;	;o;;iG;iπ;o;;i;iπ;@;@;"emValues;[ ;iπ; 0;@;o;	;o;;iG;iπ;o;;i;iπ;@;@;i∏;@;o;	;o;;i	;i∫;o;;i;i∏;@;@:@exclusiveFo;I
+;o;#;$"emValues;"emValues;%@;iª;@;o;	;o;;i;iª;o;;i;iª;@;@;[ ;iª;@;o;	;o;;i;iª;o;;i;iª;@;@;'o;#	;$"values;"values;{:importer@:filename@;o;	;o;;i;i∞;i;@;@;i∞;@;o;	;o;;i;iº;o;;i;i∞;@;@o;	
+;
+["}/* Maybe you want to create rems and pixels
+ * @function remCalc($pxWidth) {
+ *   @return $pxWidth / $em-base * 1rem;
+ * } */;;;[ ;iæ;@o;	
+;
+["8/* We use these to control various global styles */;;;[ ;i√;@o;;o:Sass::Script::Color
+;
+0:@attrs{	:rediˇ:
+greeniˇ:
+alphai:	blueiˇ;iƒ;@;o;	;o;;i;iƒ;o;;i;iƒ;@;@;"body-bg;[ ;iƒ; "!default;@;o;	;o;;i;iƒ;o;;i;iƒ;@;@o;;o;X
+;
+0;Y{	;Zi';[i';\i;]i';i≈;@;o;	;o;;i;i≈;o;;i;i≈;@;@;"body-font-color;[ ;i≈; "!default;@;o;	;o;;i%;i≈;o;;i;i≈;@;@o;;o;);
+[
+o;*
+;
+"Helvetica Neue;:string;i∆;@;o;	;o;;i);i∆;o;;i;i∆;@;@o;*
+;
+"Helvetica;;^;i∆;@;o;	;o;;i6;i∆;o;;i+;i∆;@;@o;*;
+"Helvetica;;+;%@;i∆;@;o;	;o;;iA;i∆;o;;i8;i∆;@;@o;*;
+"
+Arial;;+;%@;i∆;@;o;	;o;;iH;i∆;o;;iC;i∆;@;@o;*;
+"sans-serif;;+;%@;i∆;@;o;	;o;;iT;i∆;o;;iJ;i∆;@;@;%@;,;G;i∆;o;	;o;;iU;i∆;o;;i;i∆;@;@;@;"body-font-family;[ ;i∆; "!default;@;o;	;o;;i];i∆;o;;i;i∆;@;@o;;o;*;
+"normal;;+;%@;i«;@;o;	;o;;i ;i«;o;;i;i«;@;@;"body-font-weight;[ ;i«; "!default;@;o;	;o;;i(;i«;o;;i;i«;@;@o;;o;*;
+"normal;;+;%@;i»;@;o;	;o;;i;i»;o;;i;i»;@;@;"body-font-style;[ ;i»; "!default;@;o;	;o;;i';i»;o;;i;i»;@;@o;	
+;
+["0/* We use this to control font-smoothing */;;;[ ;i ;@o;;o;*;
+"subpixel-antialiased;;+;%@;iÀ;@;o;	;o;;i,;iÀ;o;;i;iÀ;@;@;"font-smoothing;[ ;iÀ; "!default;@;o;	;o;;i4;iÀ;o;;i;iÀ;@;@o;	
+;
+[":/* We use these to control text direction settings */;;;[ ;iÕ;@o;;o;*;
+"ltr;;+;%@;iŒ;@;o;	;o;;i;iŒ;o;;i;iŒ;@;@;"text-direction;[ ;iŒ; "!default;@;o;	;o;;i#;iŒ;o;;i;iŒ;@;@o;	
+;
+["h/* NOTE: No need to change this conditional statement, $text-direction variable controls it all. */;;;[ ;i–;@o;;o;*;
+"	left;;+;%@;i—;@;o;	;o;;i;i—;o;;i;i—;@;@;"default-float;[ ;i—; "!default;@;o;	;o;;i#;i—;o;;i;i—;@;@o;;o;*;
+"
+right;;+;%@;i“;@;o;	;o;;i!;i“;o;;i;i“;@;@;"opposite-direction;[ ;i“; "!default;@;o;	;o;;i);i“;o;;i;i“;@;@u;&)[o:Sass::Script::Operation:@operator:eq:@operand1o:Sass::Script::Variable:@underscored_name"text_direction:
+@name"text-direction:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei”:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;i”:@start_poso;;i;i”:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+;i”;@;o;	;o;;i!;i”;o;;i
+;i”;@;@
+:@operand2o:Sass::Script::String:@value"ltr:
+@type:identifier;@
+;i”;@;o;	;o;;i ;i”;o;;i;i”;@;@
+u:Sass::Tree::IfNodeÁ[00[o:Sass::Tree::VariableNode:
+@expro:Sass::Script::String:@value"
+right:
+@type:identifier:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei◊:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti;i◊:@start_poso;;i;i◊:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@
+:
+@name"default-float:@children[ ;i◊:@guarded0;@;o;	;o;;i;i◊;o;;i	;i◊;@;@
+o; ;o;;"	left;	;
+;@
+;iÿ;@;o;	;o;;i!;iÿ;o;;i;iÿ;@;@
+;"opposite-direction;[ ;iÿ;0;@;o;	;o;;i!;iÿ;o;;i	;iÿ;@;@
+[o:Sass::Tree::VariableNode:
+@expro;;"	left;; ;@
+;i‘;@;o;	;o;;i;i‘;o;;i;i‘;@;@
+;"default-float:@children[ ;i‘:@guarded0;@;o;	;o;;i;i‘;o;;i	;i‘;@;@
+o;";#o;;"
+right;; ;@
+;i’;@;o;	;o;;i";i’;o;;i;i’;@;@
+;"opposite-direction;$[ ;i’;%0;@;o;	;o;;i";i’;o;;i	;i’;@;@
+o;	
+;
+["4/* We use these as default colors throughout */;;;[ ;i€;@o;;o;X
+;
+0;Y{	;Zi0;[i¶;\i;]iÀ;i‹;@;o;	;o;;i;i‹;o;;i;i‹;@;@;"primary-color;[ ;i‹; "!default;@;o;	;o;;i&;i‹;o;;i;i‹;@;@o;;o;X
+;
+0;Y{	;ZiÈ;[iÈ;\i;]iÈ;i›;@;o;	;o;;i ;i›;o;;i;i›;@;@;"secondary-color;[ ;i›; "!default;@;o;	;o;;i(;i›;o;;i;i›;@;@o;;o;X
+;
+0;Y{	;Zi∆;[i;\i;]i;iﬁ;@;o;	;o;;i;iﬁ;o;;i;iﬁ;@;@;"alert-color;[ ;iﬁ; "!default;@;o;	;o;;i$;iﬁ;o;;i;iﬁ;@;@o;;o;X
+;
+0;Y{	;Zib;[i§;\i;]i(;iﬂ;@;o;	;o;;i;iﬂ;o;;i;iﬂ;@;@;"success-color;[ ;iﬂ; "!default;@;o;	;o;;i&;iﬂ;o;;i;iﬂ;@;@o;	
+;
+["W/* We use these to make sure border radius matches unless we want it different. */;;;[ ;i·;@o;;o;3;
+i;4["px;5"3px;i‚;@;o;	;o;;i;i‚;o;;i;i‚;@;@;6[ ;"global-radius;[ ;i‚; "!default;@;o;	;o;;i";i‚;o;;i;i‚;@;@o;;o;3;
+iË;4["px;5"1000px;i„;@;o;	;o;;i;i„;o;;i;i„;@;@;6[ ;"global-rounded;[ ;i„; "!default;@;o;	;o;;i&;i„;o;;i;i„;@;@o;	
+;
+["L/* We use these to control inset shadow shiny edges and depressions. */;;;[ ;iÂ;@o;;o;);
+[o;3;
+i ;4[ ;5"0;iÊ;@;o;	;o;;i;iÊ;o;;i;iÊ;@;@;6@%o;3;
+i;4["px;5"1px;iÊ;@;o;	;o;;i;iÊ;o;;i;iÊ;@;@;6[ o;3;
+i ;4[ ;5"0;iÊ;@;o;	;o;;i;iÊ;o;;i;iÊ;@;@;6@%;%@;,;-;iÊ;o;	;o;;i ;iÊ;o;;i;iÊ;@;@;@;"shiny-edge-size;[ ;iÊ; "!default;@;o;	;o;;i(;iÊ;o;;i;iÊ;@;@o;;o;E;F{ ;"[o;X
+;
+0;Y{	;Ziˇ;[iˇ;\i;]iˇ;iÁ;@;o;	;o;;i";iÁ;o;;i;iÁ;@;@o;3;
+f0.5;4[ ;5"0.5;iÁ;@;o;	;o;;i&;iÁ;o;;i$;iÁ;@;@;6@%;"	rgba;%@;'0;iÁ;@;o;	;o;;i(;iÁ;o;;i;iÁ;@;@;"shiny-edge-color;[ ;iÁ; "!default;@;o;	;o;;i0;iÁ;o;;i;iÁ;@;@o;;o;E;F{ ;"[o;X
+;
+0;Y{	;Zi ;[i ;\i;]i ;iË;@;o;	;o;;i);iË;o;;i%;iË;@;@o;3;
+f0.20000000000000001 ôö;4[ ;5"0.2;iË;@;o;	;o;;i-;iË;o;;i+;iË;@;@;6@%;"	rgba;%@;'0;iË;@;o;	;o;;i/;iË;o;;i ;iË;@;@;"shiny-edge-active-color;[ ;iË; "!default;@;o;	;o;;i7;iË;o;;i;iË;@;@o;	
+;
+["[/* We use this to control whether or not CSS classes come through in the gem files. */;;;[ ;iÍ;@o;;o;	;
+T;iÎ;@;o;	;o;;i";iÎ;o;;i;iÎ;@;@;"include-html-classes;[ ;iÎ; "!default;@;o;	;o;;i*;iÎ;o;;i;iÎ;@;@o;;o;	;
+T;iÏ;@;o;	;o;;i";iÏ;o;;i;iÏ;@;@;"include-print-styles;[ ;iÏ; "!default;@;o;	;o;;i*;iÏ;o;;i;iÏ;@;@o;;o;#;$"include_html_classes;"include-html-classes;%@;iÌ;@;o;	;o;;i:;iÌ;o;;i$;iÌ;@;@;" include-html-global-classes;[ ;iÌ; "!default;@;o;	;o;;iB;iÌ;o;;i;iÌ;@;@o;	
+;
+["/* Media Queries */;;;[ ;iÔ;@o;;o;3;
+i ;4["px;5"
+768px;i;@;o;	;o;;i;i;o;;i;i;@;@;6[ ;"small-screen;[ ;i; "!default;@;o;	;o;;i#;i;o;;i;i;@;@o;;o;3;
+i ;4["px;5"1280px;iÒ;@;o;	;o;;i;iÒ;o;;i;iÒ;@;@;6[ ;"medium-screen;[ ;iÒ; "!default;@;o;	;o;;i%;iÒ;o;;i;iÒ;@;@o;;o;3;
+i†;4["px;5"1440px;iÚ;@;o;	;o;;i;iÚ;o;;i;iÚ;@;@;6[ ;"large-screen;[ ;iÚ; "!default;@;o;	;o;;i$;iÚ;o;;i;iÚ;@;@o;;o;*
+;
+"only screen;;^;iÙ;@;o;	;o;;i;iÙ;o;;i;iÙ;@;@;"screen;[ ;iÙ; "!default;@;o;	;o;;i%;iÙ;o;;i;iÙ;@;@o;;o:&Sass::Script::StringInterpolation:@aftero;*
+;
+");;^;iı;@;o;	;o;;i=;iı;o;;i;;iı;@;@:	@mido;#;$"small_screen;"small-screen;%@;iı;@;o;	;o;;i;;iı;o;;i-;iı;@;@;iı:@beforeo;*
+;
+"!only screen and (min-width: ;;^;iı;@;o;	;o;;i+;iı;o;;i;iı;@;@;@;o;	;o;;i>;iı;o;;i;iı;@;@;"
+small;[ ;iı; "!default;@;o;	;o;;iF;iı;o;;i;iı;@;@o;;o;_;`o;*
+;
+");;^;iˆ;@;o;	;o;;i>;iˆ;o;;i<;iˆ;@;@;ao;#;$"medium_screen;"medium-screen;%@;iˆ;@;o;	;o;;i<;iˆ;o;;i-;iˆ;@;@;iˆ;bo;*
+;
+" only screen and (min-width:;;^;iˆ;@;o;	;o;;i+;iˆ;o;;i;iˆ;@;@;@;o;	;o;;i?;iˆ;o;;i;iˆ;@;@;"medium;[ ;iˆ; "!default;@;o;	;o;;iG;iˆ;o;;i;iˆ;@;@o;;o;_;`o;*
+;
+");;^;i˜;@;o;	;o;;i<;i˜;o;;i:;i˜;@;@;ao;#;$"large_screen;"large-screen;%@;i˜;@;o;	;o;;i:;i˜;o;;i,;i˜;@;@;i˜;bo;*
+;
+" only screen and (min-width:;;^;i˜;@;o;	;o;;i*;i˜;o;;i;i˜;@;@;@;o;	;o;;i=;i˜;o;;i;i˜;@;@;"
+large;[ ;i˜; "!default;@;o;	;o;;iE;i˜;o;;i;i˜;@;@o;;o;*
+;
+"-only screen and (orientation: landscape);;^;i¯;@;o;	;o;;i=;i¯;o;;i;i¯;@;@;"landscape;[ ;i¯; "!default;@;o;	;o;;iE;i¯;o;;i;i¯;@;@o;;o;*
+;
+",only screen and (orientation: portrait);;^;i˘;@;o;	;o;;i;;i˘;o;;i;i˘;@;@;"portrait;[ ;i˘; "!default;@;o;	;o;;iC;i˘;o;;i;i˘;@;@o;	
+;
+["w/*We use this as cursors values for enabling the option of having custom cursors in the whole site's stylesheet */;;;[ ;i˚;@o;;o;*;
+"crosshair;;+;%@;i¸;@;o;	;o;;i);i¸;o;;i;i¸;@;@;"cursor-crosshair-value;[ ;i¸; "!default;@;o;	;o;;i1;i¸;o;;i;i¸;@;@o;;o;*;
+"default;;+;%@;i˝;@;o;	;o;;i%;i˝;o;;i;i˝;@;@;"cursor-default-value;[ ;i˝; "!default;@;o;	;o;;i-;i˝;o;;i;i˝;@;@o;;o;*;
+"pointer;;+;%@;i˛;@;o;	;o;;i%;i˛;o;;i;i˛;@;@;"cursor-pointer-value;[ ;i˛; "!default;@;o;	;o;;i-;i˛;o;;i;i˛;@;@o;;o;*;
+"	help;;+;%@;iˇ;@;o;	;o;;i;iˇ;o;;i;iˇ;@;@;"cursor-help-value;[ ;iˇ; "!default;@;o;	;o;;i';iˇ;o;;i;iˇ;@;@o;;o;*;
+"	text;;+;%@;i ;@;o;	;o;;i;i ;o;;i;i ;@;@;"cursor-text-value;[ ;i ; "!default;@;o;	;o;;i';i ;o;;i;i ;@;@u;&Ù;[o:Sass::Script::Variable:@underscored_name" include_html_global_classes:
+@name" include-html-global-classes:@filename"Z/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss/foundation/components/_global.scss:
+@linei:@options{ :@source_rangeo:Sass::Source::Range	:@end_poso:Sass::Source::Position:@offseti';	i:@start_poso;;i
+;	i:@importero: Sass::Importers::Filesystem:@same_name_warningso:Set:
+@hash{ :
+@root"7/home/saaphx/.gems/gems/zurb-foundation-4.3.1/scss:
+@file@	0[#o:Sass::Tree::CommentNode
+:@value["F/* Set box-sizing globally to handle padding and border widths */:
+@type:silent:@children[ ;	i;
+@
+o:Sass::Tree::RuleNode:@has_childrenT:
+@tabsi ;[o:Sass::Tree::MixinNode:@keywords{ :
+@args[o:Sass::Script::String;"border-box;:identifier;@	;	i	;
+@
+;o;	;o;;i(;	i	;o;;i;	i	;@;@	;"box-sizing;[ :@splat0;	i	;
+@
+;o;	;o;;i);	i	;o;;i
+;	i	;@;@	:@selector_source_rangeo;	;o;;i;	i;o;;i;	i;@;@	;	i:@parsed_ruleso:"Sass::Selector::CommaSequence:@members[o:Sass::Selector::Sequence;)[o:#Sass::Selector::SimpleSequence;)[o:Sass::Selector::Universal;" ;	i:@namespace0;@0;	i:@sourceso;;{ :@subject0;o;	;o;;i;	i;o;;i;	i;0;@0o;*;)["
+o;+;)[o;,;@0;	i;-0o:Sass::Selector::Pseudo
+;:
+class:	@arg0;["before;@0;	i;@0;	i;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@0o;*;)["
+o;+;)[o;,;@0;	i;-0o;0
+;;1;20;["
+after;@0;	i;@0;	i;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@0;@0;	i:
+@rule["*,
+  *:before,
+  *:after;
+@
+;o;	;o;;i	;	i
+;o;;i;	i;@;@	o;;T;i ;[o:Sass::Tree::PropNode;o; ;"base_font_size;"base-font-size;@	;	i;
+@
+;o;	;o;;i);	i;o;;i;	i;@;@	;i ;["font-size:@value_source_rangeo;	;o;;i);	i;o;;i;	i;@;@	;[ ;	i:@name_source_rangeo;	;o;;i;	i;o;;i;	i;@;@	;
+@
+;o;	;@c;@h;@;@	:@prop_syntax:new;&o;	;o;;i;	i;o;;i;	i;@;@	;	i;'o;(;)[o;*;)[o;+;)[o:Sass::Selector::Element	;["	html;" ;	i;-0;@v;	i;.o;;{ ;/0;o;	;o;;i
+;	i;o;;i;	i;0;@vo;*;)["
+o;+;)[o;9	;["	body;@v;	i;-0;@v;	i;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@v;@v;	i;3["html,
+  body;
+@
+;o;	;o;;i,;	i;o;;i;	i;@;@	o;
+;["/* Default body styles */;;;[ ;	i;
+@
+o;;T;i ;[o;4;o; ;"body_bg;"body-bg;@	;	i;
+@
+;o;	;o;;i;	i;o;;i;	i;@;@	;i ;["background;5o;	;o;;i;	i;o;;i;	i;@;@	;[ ;	i;6o;	;o;;i;	i;o;;i
+;	i;@;@	;
+@
+;o;	;@ô;@û;@;@	;7;8o;4;o; ;"body_font_color;"body-font-color;@	;	i;
+@
+;o;	;o;;i!;	i;o;;i;	i;@;@	;i ;["
+color;5o;	;o;;i!;	i;o;;i;	i;@;@	;[ ;	i;6o;	;o;;i;	i;o;;i
+;	i;@;@	;
+@
+;o;	;@™;@Ø;@;@	;7;8o;4;o;#;"0;;$;
+@
+;i ;["padding;5o;	;o;;i;	i;o;;i;	i;@;@	;[ ;	i;6o;	;o;;i;	i;o;;i
+;	i;@;@	;
+@
+;o;	;@∑;@º;@;@	;7;8o;4;o;#;"0;;$;
+@
+;i ;["margin;5o;	;o;;i;	i;o;;i;	i;@;@	;[ ;	i;6o;	;o;;i;	i;o;;i
+;	i;@;@	;
+@
+;o;	;@ƒ;@…;@;@	;7;8o;4;o; ;"body_font_family;"body-font-family;@	;	i;
+@
+;o;	;o;;i(;	i;o;;i;	i;@;@	;i ;["font-family;5o;	;o;;i(;	i;o;;i;	i;@;@	;[ ;	i;6o;	;o;;i;	i;o;;i
+;	i;@;@	;
+@
+;o;	;@’;@⁄;@;@	;7;8o;4;o; ;"body_font_weight;"body-font-weight;@	;	i;
+@
+;o;	;o;;i(;	i;o;;i;	i;@;@	;i ;["font-weight;5o;	;o;;i(;	i;o;;i;	i;@;@	;[ ;	i;6o;	;o;;i;	i;o;;i
+;	i;@;@	;
+@
+;o;	;@Ê;@Î;@;@	;7;8o;4;o; ;"body_font_style;"body-font-style;@	;	i;
+@
+;o;	;o;;i&;	i;o;;i;	i;@;@	;i ;["font-style;5o;	;o;;i&;	i;o;;i;	i;@;@	;[ ;	i;6o;	;o;;i;	i;o;;i
+;	i;@;@	;
+@
+;o;	;@˜;@¸;@;@	;7;8o;4;o;#;"1;;$;
+@
+;i ;["line-height;5o;	;o;;i;	i;o;;i;	i;@;@	;[ ;	i;6o;	;o;;i;	i;o;;i
+;	i;@;@	;
+@
+;o;	;@;@	;@;@	;7;8o;
+;["F/* Set to $base-line-height to take on browser default of 150% */;;;[ ;	i;
+@
+o;4;o;#;"relative;;$;
+@
+;i ;["position;5o;	;o;;i;	i;o;;i;	i;@;@	;[ ;	i;6o;	;o;;i;	i;o;;i
+;	i;@;@	;
+@
+;o;	;@;@;@;@	;7;8o;4;o; ;"cursor_default_value;"cursor-default-value;@	;	i;
+@
+;o;	;o;;i';	i;o;;i;	i;@;@	;i ;["cursor;5o;	;o;;i';	i;o;;i;	i;@;@	;[ ;	i;6o;	;o;;i;	i;o;;i
+;	i;@;@	;
+@
+;o;	;@&;@+;@;@	;7;8;&o;	;o;;i;	i;o;;i;	i;@;@	;	i;'o;(;)[o;*;)[o;+;)[o;9	;["	body;" ;	i;-0;@9;	i;.o;;{ ;/0;o;	;o;;i
+;	i;o;;i;	i;0;@9;@9;	i;3["	body;
+@
+;o;	;o;;i	;	i;o;;i;	i;@;@	o;;T;i ;[o;4;o; ;"cursor_pointer_value;"cursor-pointer-value;@	;	i;
+@
+;o;	;o;;i-;	i;o;;i;	i;@;@	;i ;["cursor;5o;	;o;;i-;	i;o;;i;	i;@;@	;[ ;	i;6o;	;o;;i;	i;o;;i;	i;@;@	;
+@
+;o;	;@P;@U;@;@	;7;8;&o;	;o;;i;	i;o;;i;	i;@;@	;	i;'o;(;)[o;*;)[o;+;)[o;9	;["a;" ;	i;-0o;0
+;;1;20;["
+hover;@c;	i;@c;	i;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@c;@c;	i;3["a:hover;
+@
+;o;	;o;;i0;	i;o;;i;	i;@;@	o;
+;["</* Override outline from normalize, we don't like it */;;;[ ;	i;
+@
+o;;T;i ;[o;4;o;#;"	none;;$;
+@
+;i ;["outline;5o;	;o;;i;	i ;o;;i;	i ;@;@	;[ ;	i ;6o;	;o;;i;	i ;o;;i;	i ;@;@	;
+@
+;o;	;@};@Ç;@;@	;7;8;&o;	;o;;i;	i ;o;;i;	i ;@;@	;	i ;'o;(;)[o;*;)[o;+;)[o;9	;["a;" ;	i ;-0o;0
+;;1;20;["
+focus;@ê;	i ;@ê;	i ;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@ê;@ê;	i ;3["a:focus;
+@
+;o;	;o;;i";	i ;o;;i;	i ;@;@	o;
+;["B/* Grid Defaults to get images and embeds to work properly */;;;[ ;	i";
+@
+o;;T;i ;[o;4;o;#;"	100%;;$;
+@
+;i ;["max-width;5o;	;o;;i;	i%;o;;i;	i%;@;@	;[ ;	i%;6o;	;o;;i;	i%;o;;i;	i%;@;@	;
+@
+;o;	;@™;@Ø;@;@	;7;8o;4;o;#;"	auto;;$;
+@
+;i ;["height;5o;	;o;;i-;	i%;o;;i);	i%;@;@	;[ ;	i%;6o;	;o;;i';	i%;o;;i!;	i%;@;@	;
+@
+;o;	;@∑;@º;@;@	;7;8;&o;	;o;;i;	i%;o;;i;	i#;@;@	;	i#;'o;(;)[o;*;)[o;+;)[o;9	;["img;" ;	i#;-0;@ ;	i#;.o;;{ ;/0;o;	;o;;i	;	i;o;;i;	i;0;@ o;*;)["
+o;+;)[o;9	;["object;@ ;	i#;-0;@ ;	i#;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@ o;*;)["
+o;+;)[o;9	;["
+embed;@ ;	i#;-0;@ ;	i#;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@ ;@ ;	i#;3["img,
+  object,
+  embed;
+@
+;o;	;o;;i0;	i%;o;;i;	i#;@;@	o;;T;i ;[o;4;o;#;"	100%;;$;
+@
+;i ;["height;5o;	;o;;i;	i(;o;;i;	i(;@;@	;[ ;	i(;6o;	;o;;i;	i(;o;;i;	i(;@;@	;
+@
+;o;	;@˜;@¸;@;@	;7;8;&o;	;o;;i;	i(;o;;i;	i';@;@	;	i';'o;(;)[o;*;)[o;+;)[o;9	;["object;" ;	i';-0;@
+;	i';.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@
+o;*;)["
+o;+;)[o;9	;["
+embed;@
+;	i';-0;@
+;	i';.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@
+;@
+;	i';3["object,
+  embed;
+@
+;o;	;o;;i;	i(;o;;i;	i';@;@	o;;T;i ;[o;4;o;#;"bicubic;;$;
+@
+;i ;["-ms-interpolation-mode;5o;	;o;;i-;	i);o;;i&;	i);@;@	;[ ;	i);6o;	;o;;i$;	i);o;;i;	i);@;@	;
+@
+;o;	;@*;@/;@;@	;7;8;&o;	;o;;i;	i);o;;i;	i);@;@	;	i);'o;(;)[o;*;)[o;+;)[o;9	;["img;" ;	i);-0;@=;	i);.o;;{ ;/0;o;	;o;;i	;	i;o;;i;	i;0;@=;@=;	i);3["img;
+@
+;o;	;o;;i0;	i);o;;i;	i);@;@	o;;T;i ;[o;;T;i ;[o;4;o;#;"none !important;;$;
+@
+;i ;["max-width;5o;	;o;;i-;	i/;o;;i;	i/;@;@	;[ ;	i/;6o;	;o;;i;	i/;o;;i;	i/;@;@	;
+@
+;o;	;@R;@W;@;@	;7;8;&o;	;o;;i;	i/;o;;i
+;	i-;@;@	;	i-;'o;(;)[o;*;)[o;+;)[o;9	;["img;" ;	i-;-0;@e;	i-;.o;;{ ;/0;o;	;o;;i	;	i;o;;i;	i;0;@eo;*;)["
+o;+;)[o;9	;["
+embed;@e;	i-;-0;@e;	i-;.o;;{ ;/0;o;	;o;;i;	i;o;;i
+;	i;0;@eo;*;)["
+o;+;)[o;9	;["object;@e;	i-;-0;@e;	i-;.o;;{ ;/0;o;	;o;;i;	i;o;;i
+;	i;0;@e;@e;	i-;3["img,
+    embed,
+    object;
+@
+;o;	;o;;i;	i0;o;;i
+;	i-;@;@	;&o;	;o;;i;	i,;o;;i;	i+;@;@	;	i+;'o;(;)[o;*;)[o;+;)[o:Sass::Selector::Id;["map_canvas;" ;	i+;@ñ;	i+;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@ño;*;)["
+o;+;)[o:Sass::Selector::Class;["map_canvas;@ñ;	i+;@ñ;	i+;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@ñ;@ñ;	i+;3["#map_canvas,
+  .map_canvas;
+@
+;o;	;o;;i	;	i1;o;;i;	i+;@;@	o;
+;[",/* Miscellaneous useful HTML classes */;;;[ ;	i3;
+@
+o;;T;i ;[o;4;o;#;"left !important;;$;
+@
+;i ;["
+float;5o;	;o;;i.;	i4;o;;i;	i4;@;@	;[ ;	i4;6o;	;o;;i;	i4;o;;i;	i4;@;@	;
+@
+;o;	;@∫;@ø;@;@	;7;8;&o;	;o;;i;	i4;o;;i;	i4;@;@	;	i4;'o;(;)[o;*;)[o;+;)[o;;;["	left;" ;	i4;@Õ;	i4;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@Õ;@Õ;	i4;3["
+.left;
+@
+;o;	;o;;i1;	i4;o;;i;	i4;@;@	o;;T;i ;[o;4;o;#;"right !important;;$;
+@
+;i ;["
+float;5o;	;o;;i/;	i5;o;;i;	i5;@;@	;[ ;	i5;6o;	;o;;i;	i5;o;;i;	i5;@;@	;
+@
+;o;	;@‡;@Â;@;@	;7;8;&o;	;o;;i;	i5;o;;i;	i5;@;@	;	i5;'o;(;)[o;*;)[o;+;)[o;;;["
+right;" ;	i5;@Û;	i5;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@Û;@Û;	i5;3[".right;
+@
+;o;	;o;;i2;	i5;o;;i;	i5;@;@	o;;T;i ;[o;4;o;#;"left !important;;$;
+@
+;i ;["text-align;5o;	;o;;i3;	i6;o;;i$;	i6;@;@	;[ ;	i6;6o;	;o;;i";	i6;o;;i;	i6;@;@	;
+@
+;o;	;@;@;@;@	;7;8;&o;	;o;;i;	i6;o;;i;	i6;@;@	;	i6;'o;(;)[o;*;)[o;+;)[o;;;["text-left;" ;	i6;@;	i6;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@;@;	i6;3[".text-left;
+@
+;o;	;o;;i6;	i6;o;;i;	i6;@;@	o;;T;i ;[o;4;o;#;"right !important;;$;
+@
+;i ;["text-align;5o;	;o;;i4;	i7;o;;i$;	i7;@;@	;[ ;	i7;6o;	;o;;i";	i7;o;;i;	i7;@;@	;
+@
+;o;	;@,;@1;@;@	;7;8;&o;	;o;;i;	i7;o;;i;	i7;@;@	;	i7;'o;(;)[o;*;)[o;+;)[o;;;["text-right;" ;	i7;@?;	i7;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@?;@?;	i7;3[".text-right;
+@
+;o;	;o;;i7;	i7;o;;i;	i7;@;@	o;;T;i ;[o;4;o;#;"center !important;;$;
+@
+;i ;["text-align;5o;	;o;;i5;	i8;o;;i$;	i8;@;@	;[ ;	i8;6o;	;o;;i";	i8;o;;i;	i8;@;@	;
+@
+;o;	;@R;@W;@;@	;7;8;&o;	;o;;i;	i8;o;;i;	i8;@;@	;	i8;'o;(;)[o;*;)[o;+;)[o;;;["text-center;" ;	i8;@e;	i8;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@e;@e;	i8;3[".text-center;
+@
+;o;	;o;;i8;	i8;o;;i;	i8;@;@	o;;T;i ;[o;4;o;#;"justify !important;;$;
+@
+;i ;["text-align;5o;	;o;;i6;	i9;o;;i$;	i9;@;@	;[ ;	i9;6o;	;o;;i";	i9;o;;i;	i9;@;@	;
+@
+;o;	;@x;@};@;@	;7;8;&o;	;o;;i;	i9;o;;i;	i9;@;@	;	i9;'o;(;)[o;*;)[o;+;)[o;;;["text-justify;" ;	i9;@ã;	i9;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@ã;@ã;	i9;3[".text-justify;
+@
+;o;	;o;;i9;	i9;o;;i;	i9;@;@	o;;T;i ;[o;4;o;#;"	none;;$;
+@
+;i ;["display;5o;	;o;;i%;	i:;o;;i!;	i:;@;@	;[ ;	i:;6o;	;o;;i;	i:;o;;i;	i:;@;@	;
+@
+;o;	;@û;@£;@;@	;7;8;&o;	;o;;i;	i:;o;;i;	i:;@;@	;	i:;'o;(;)[o;*;)[o;+;)[o;;;["	hide;" ;	i:;@±;	i:;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@±;@±;	i:;3["
+.hide;
+@
+;o;	;o;;i(;	i:;o;;i;	i:;@;@	o;
+;["‚/* Font smoothing
+ * Antialiased font smoothing works best for light text on a dark background.
+ * Apply to single elements instead of globally to body.
+ * Note this only applies to webkit-based desktop browsers on the Mac. */;;;[ ;	i<;
+@
+o;;T;i ;[o;4;o;#;"antialiased;;$;
+@
+;i ;["-webkit-font-smoothing;5o;	;o;;i:;	i@;o;;i/;	i@;@;@	;[ ;	i@;6o;	;o;;i-;	i@;o;;i;	i@;@;@	;
+@
+;o;	;@»;@Õ;@;@	;7;8;&o;	;o;;i;	i@;o;;i;	i@;@;@	;	i@;'o;(;)[o;*;)[o;+;)[o;;;["antialiased;" ;	i@;@€;	i@;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@€;@€;	i@;3[".antialiased;
+@
+;o;	;o;;i=;	i@;o;;i;	i@;@;@	o;
+;["W/* Get rid of gap under images by making them display: inline-block; by default */;;;[ ;	iB;
+@
+o;;T;i ;[o;4;o;#;"inline-block;;$;
+@
+;i ;["display;5o;	;o;;i;	iD;o;;i;	iD;@;@	;[ ;	iD;6o;	;o;;i;	iD;o;;i
+;	iD;@;@	;
+@
+;o;	;@Ú;@˜;@;@	;7;8o;4;o;#;"middle;;$;
+@
+;i ;["vertical-align;5o;	;o;;i ;	iE;o;;i;	iE;@;@	;[ ;	iE;6o;	;o;;i;	iE;o;;i
+;	iE;@;@	;
+@
+;o;	;@ˇ;@;@;@	;7;8;&o;	;o;;i;	iC;o;;i;	iC;@;@	;	iC;'o;(;)[o;*;)[o;+;)[o;9	;["img;" ;	iC;-0;@;	iC;.o;;{ ;/0;o;	;o;;i	;	i;o;;i;	i;0;@;@;	iC;3["img;
+@
+;o;	;o;;i	;	iF;o;;i;	iC;@;@	o;
+;["(/*
+ * Global resets for forms
+ * */;;;[ ;	iH;
+@
+o;
+;[";/* Make sure textarea takes on height automatically */;;;[ ;	iL;
+@
+o;;T;i ;[o;4;o;#;"	auto;;$;
+@
+;i ;["height;5o;	;o;;i;	iM;o;;i;	iM;@;@	;[ ;	iM;6o;	;o;;i;	iM;o;;i;	iM;@;@	;
+@
+;o;	;@-;@2;@;@	;7;8o;4;o;#;"	50px;;$;
+@
+;i ;["min-height;5o;	;o;;i1;	iM;o;;i-;	iM;@;@	;[ ;	iM;6o;	;o;;i+;	iM;o;;i!;	iM;@;@	;
+@
+;o;	;@:;@?;@;@	;7;8;&o;	;o;;i;	iM;o;;i;	iM;@;@	;	iM;'o;(;)[o;*;)[o;+;)[o;9	;["textarea;" ;	iM;-0;@M;	iM;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@M;@M;	iM;3["textarea;
+@
+;o;	;o;;i4;	iM;o;;i;	iM;@;@	o;
+;["5/* Make select elements 100% width by default */;;;[ ;	iO;
+@
+o;;T;i ;[o;4;o;#;"	100%;;$;
+@
+;i ;["
+width;5o;	;o;;i;	iP;o;;i;	iP;@;@	;[ ;	iP;6o;	;o;;i;	iP;o;;i;	iP;@;@	;
+@
+;o;	;@d;@i;@;@	;7;8;&o;	;o;;i;	iP;o;;i;	iP;@;@	;	iP;'o;(;)[o;*;)[o;+;)[o;9	;["select;" ;	iP;-0;@w;	iP;.o;;{ ;/0;o;	;o;;i;	i;o;;i;	i;0;@w;@w;	iP;3["select;
+@
+;o;	;o;;i;	iP;o;;i;	iP;@;@	;i;@;o;	;o;;i;i;o;;i;i;@;@

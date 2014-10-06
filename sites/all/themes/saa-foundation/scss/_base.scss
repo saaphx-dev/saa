@@ -1,0 +1,19 @@
+// Comment out this import if you don't want to use the settings file
+@import "settings";
+
+
+
+// Imports into every single file
+@import "compass/css3/images";
+@import "compass/css3/box-shadow";
+@import "compass/css3/text-shadow";
+@import "compass/css3/border-radius";
+@import "foundation";
+
+//modules
+
+@import "modules/mixins";
+@import "modules/placeholders";
+
+
+
